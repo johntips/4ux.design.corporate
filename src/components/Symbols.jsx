@@ -1,29 +1,44 @@
 /**
- * Symbols.jsx — uuuux.design のコアシンボル定義
+ * Symbols.jsx — uuuux.design コアシンボル
  *
- * 2種類のSVGシンボルを提供:
- *   UShape: 半円アーチ型 (U の文字を図形化)
- *   XShape: クロス型 (回転で X にも + にも見える)
+ * viewBox 48x48 統一。stroke ベース。
  *
- * viewBox 48x48 で統一。stroke ベースのミニマルな線画。
+ * UShape: ドーナツ型の太い線で描くU字。半円 + 両脚の直線
+ * XShape: U と同じ太さの十字 (+)。回転で × にも見える
+ *
+ * 共通:
+ *   - strokeWidth: 10 → 太く機械的
+ *   - strokeLinecap: butt → 端を直角カット
+ *   - 中心: (24, 24)
  */
 
+const SW = 10  // U と + で統一する stroke 幅
+
 /**
- * UShape — 半円/アーチ
+ * UShape — U字型
  *
- * SVGパス: 上端(8,8)から下端(40,8)へ向かうU字カーブ
- * ・ベジェではなく、Cコマンドで滑らかな半円を描画
- * ・strokeLinecap: round で端を丸くし、幾何学的な柔らかさを出す
- * ・回転して使うことで 0°/90°/180°/270° の4方向バリエーションになる
+ * パス解説:
+ *   M8,10         左上の脚の先端
+ *   V24           下へ直線 (左脚)
+ *   A16,16 0 0,1  半径16の真円弧を時計回り (=下向きのカーブ)
+ *   40,24         右下の脚の付け根へ
+ *   V10           上へ直線 (右脚)
+ *
+ * 形状イメージ:
+ *   |         |    ← 脚 (y=10 → y=24)
+ *   |         |
+ *    ╲_______╱     ← 真円弧 (r=16)
+ *
+ * 回転: 0°=U, 90°=⊃, 180°=∩, 270°=⊂
  */
 export function UShape({ color = '#1a1a1a', ...props }) {
   return (
     <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path
-        d="M8 8 C8 8 8 40 24 40 C40 40 40 8 40 8"
+        d="M8,10 V24 A16,16 0 0,1 40,24 V10"
         stroke={color}
-        strokeWidth="5"
-        strokeLinecap="round"
+        strokeWidth={SW}
+        strokeLinecap="butt"
         fill="none"
       />
     </svg>
@@ -31,18 +46,18 @@ export function UShape({ color = '#1a1a1a', ...props }) {
 }
 
 /**
- * XShape — クロス/プラス
+ * XShape — 十字 (+)
  *
- * 2本の対角線が中心(24,24)で交差する形状
- * ・回転 0° → X (バツ)
- * ・回転 45° → + (プラス)
- * ・この回転の曖昧さが uuuux.design のアイデンティティ
+ * 水平線 (8,24)→(40,24) と 垂直線 (24,8)→(24,40)
+ * U と同じ strokeWidth=10 で太さ揃え
+ *
+ * 回転: 0°=+, 45°=×
  */
 export function XShape({ color = '#1a1a1a', ...props }) {
   return (
     <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <line x1="10" y1="10" x2="38" y2="38" stroke={color} strokeWidth="5" strokeLinecap="round" />
-      <line x1="38" y1="10" x2="10" y2="38" stroke={color} strokeWidth="5" strokeLinecap="round" />
+      <line x1="8" y1="24" x2="40" y2="24" stroke={color} strokeWidth={SW} strokeLinecap="butt" />
+      <line x1="24" y1="8" x2="24" y2="40" stroke={color} strokeWidth={SW} strokeLinecap="butt" />
     </svg>
   )
 }

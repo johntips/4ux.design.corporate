@@ -1,26 +1,24 @@
 /**
- * App.jsx — uuuux.design コーポレートLP ルートコンポーネント
+ * App.jsx — uuuux.design コーポレートLP
  *
  * 構成:
- *   TileGrid      — fixed背景。マウス追従で回転するタイルパターン
- *   Content        — z-index:1 のスクロール可能なメインコンテンツ
- *     ├ Hero         — ファーストビュー (ロゴ + タイトル)
- *     ├ PatternStrip — 横スクロールするタイル帯
- *     ├ Philosophy   — 4つのU + Xの解説
- *     ├ PatternStrip — 逆方向のタイル帯
- *     └ Footer       — ミニロゴ + コピーライト
+ *   TileGrid      — fixed背景。マウス/タッチ追従で回転するタイルパターン
+ *   Controller     — 左下のAbleton風パラメータコントローラー
+ *   Content        — スクロール可能なメインコンテンツ
  */
 import TileGrid from './components/TileGrid'
 import Hero from './components/Hero'
 import PatternStrip from './components/PatternStrip'
 import Philosophy from './components/Philosophy'
 import Footer from './components/Footer'
+import Controller from './components/Controller'
 import './App.css'
 
 export default function App() {
   return (
     <>
       <TileGrid />
+      <Controller />
       <div className="content">
         <Hero />
         <PatternStrip direction="left" />

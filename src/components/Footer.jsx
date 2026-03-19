@@ -1,19 +1,25 @@
 /**
- * Footer.jsx — ミニロゴ + コピーライト
- * アニメーションなし、静的コンポーネント
+ * Footer.jsx — ミニロゴ + コピーライト + バリエーション表示
  */
-import { UShape, XShape } from './Symbols'
+import { VariantU, VariantX } from './SymbolVariants'
+import variants from './SymbolVariants'
+import { useVariant } from '../context/VariantContext'
 
 export default function Footer() {
+  const v = useVariant()
+
   return (
     <footer className="footer">
       <div className="logo-mark">
-        <UShape />
-        <UShape style={{ transform: 'rotate(90deg)' }} />
-        <UShape style={{ transform: 'rotate(180deg)' }} />
-        <XShape style={{ transform: 'rotate(45deg)' }} />
+        <VariantU />
+        <VariantU style={{ transform: 'rotate(90deg)' }} />
+        <VariantU style={{ transform: 'rotate(180deg)' }} />
+        <VariantX style={{ transform: 'rotate(45deg)' }} />
       </div>
-      <p>uuuux.design — Universal eXperience Design Studio</p>
+      <p>uuuux.design — 4 dimensions of You, for You.</p>
+      <p style={{ marginTop: '0.5rem', fontSize: '0.7rem', opacity: 0.4 }}>
+        Shift+F to switch — variant {v}: {variants[v].name}
+      </p>
     </footer>
   )
 }

@@ -1,16 +1,19 @@
 /**
  * Hero.jsx — ファーストビュー
  *
- * GSAPアニメーション:
- *   1. ロゴタイル4つが stagger で回転しながらフェードイン
- *   2. テキストが下からスライドイン
- *   3. スクロールインジケーターがゆっくり点滅
+ * ロゴ: U U U U X (5タイル)
+ *   - 全Uは初期状態で「上に欠け部分」= 回転0°
+ *   - カーソルが通過すると個別に回転 (gsap)
+ *   - タッチでも反応
  *
- * gsap.context() でスコープを作り、return で revert → クリーンアップ完了
+ * GSAPアニメーション:
+ *   1. ロゴ: stagger フェードイン
+ *   2. テキスト: 下からスライド
+ *   3. スクロールインジケーター: 脈動
  */
 import { useRef, useEffect } from 'react'
 import gsap from 'gsap'
-import { UShape, XShape } from './Symbols'
+import { VariantU, VariantX } from './SymbolVariants'
 
 export default function Hero() {
   const logoRef = useRef(null)
@@ -19,58 +22,90 @@ export default function Hero() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-
-      // ── ロゴ: 4タイルが順番に回転しながら出現 ──
+      // ── ロゴ stagger フェードイン ──
       gsap.from(logoRef.current.children, {
-        scale: 0,            // 0 → 1 にスケールアップ
-        rotation: -180,      // 半回転しながら登場
+        scale: 0,
+        rotation: -180,
         opacity: 0,
         duration: 1,
-        stagger: 0.15,       // 150ms ずつずらして順番に
-        ease: 'back.out(1.7)', // 少しバウンドするイージング
+        stagger: 0.15,
+        ease: 'back.out(1.7)',
         delay: 0.3,
       })
 
-      // ── テキスト: 下から浮かび上がる ──
+      // ── テキスト スライドイン ──
       gsap.from(textRef.current.children, {
         y: 30,
         opacity: 0,
         duration: 0.8,
         stagger: 0.2,
-        ease: 'power3.out',  // 最初速く、後半ゆっくり減速
+        ease: 'power3.out',
         delay: 1,
       })
 
-      // ── スクロールインジケーター: 永続的に脈動 ──
+      // ── スクロール脈動 ──
       gsap.to(scrollRef.current, {
         opacity: 0.3,
         y: 5,
         duration: 1.5,
-        repeat: -1,           // 無限リピート
-        yoyo: true,           // 行って戻る
+        repeat: -1,
+        yoyo: true,
         ease: 'sine.inOut',
       })
     })
-
-    return () => ctx.revert()  // アンマウント時にすべてのアニメーションを破棄
+    return () => ctx.revert()
   }, [])
+
+  // ── カーソル hover でロゴタイル回転 ──
+  const handleTileHover = (e) => {
+    gsap.to(e.currentTarget, {
+      rotation: '+=90',   // 現在角度 + 90°
+      duration: 0.4,
+      ease: 'power2.out',
+      overwrite: 'auto',
+    })
+  }
 
   return (
     <section className="hero">
-      {/* ロゴ: U U U X の4タイル配置 */}
+      {/* ロゴ: U U U U X = uuuux
+          全U は回転0° = 欠けが上向き
+          hover で各タイルが90°ずつ回転 */}
       <div className="hero-logo" ref={logoRef}>
-        <UShape />
-        <UShape style={{ transform: 'rotate(90deg)' }} />
-        <UShape style={{ transform: 'rotate(180deg)' }} />
-        <XShape />
+        <div className="hero-tile" onMouseEnter={handleTileHover} onTouchStart={handleTileHover}>
+          <VariantU />
+        </div>
+        <div className="hero-tile" onMouseEnter={handleTileHover} onTouchStart={handleTileHover}>
+          <VariantU />
+        </div>
+        <div className="hero-tile" onMouseEnter={handleTileHover} onTouchStart={handleTileHover}>
+          <VariantU />
+        </div>
+        <div className="hero-tile" onMouseEnter={handleTileHover} onTouchStart={handleTileHover}>
+          <VariantU />
+        </div>
+        <div className="hero-tile" onMouseEnter={handleTileHover} onTouchStart={handleTileHover}>
+          <VariantX />
+        </div>
       </div>
 
       <div ref={textRef}>
         <h1>uuuux.design</h1>
-        <p className="subtitle">
-          Universal eXperience Design Studio.
+        <p className="subtitle poem">
+          4 dimensions of You — for You.<br />
+          あなたという存在を、4つの次元で分解する。<br />
           <br />
-          4つの U が、あらゆる体験を再定義する。
+          Universal — すべての人に届く形を。<br />
+          Unified — 断片を繋ぎ、ひとつの体験へ。<br />
+          Unique — あなただけの輪郭を見つける。<br />
+          Unknown — まだ名前のない可能性を拓く。<br />
+          <br />
+          U は、You。<br />
+          4つの U が交差する場所に、X が生まれる。<br />
+          それは体験であり、未知であり、変容の記号。<br />
+          <br />
+          私たちは、あなたのためにデザインする。<br />
+          あらゆる次元から、あなたを再定義するために。
         </p>
       </div>
 
