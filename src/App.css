@@ -487,18 +487,13 @@
     bottom: 1.5rem;
   }
 
-  /* SPではコントローラーをコンパクトに */
+  /* SPでもコントローラーは全表示 (PC と同じ) */
   .controller {
     bottom: 0.5rem;
     left: 0.5rem;
-    padding: 8px 10px;
+    right: 0.5rem;
     min-width: unset;
-  }
-
-  .fader,
-  .ctrl-sep,
-  .ctrl-footer {
-    display: none;
+    padding: 10px 12px 8px;
   }
 }
 
