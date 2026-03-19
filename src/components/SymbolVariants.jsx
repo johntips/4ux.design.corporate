@@ -1,192 +1,158 @@
 /**
  * SymbolVariants.jsx — ランドルト環ベースの10バリエーション
  *
- * すべて viewBox 48x48、中心(24,24)、半径16 の円弧ベース
+ * U(c, sw) / X(c, sw) — sw はコントローラーの STRK スライダー値
+ * 各バリエーション固有の太さ比率 × sw でスケーリング
  *
- * U = ランドルト環 (上に切れ目のある円弧)
- *   変数: strokeWidth (太さ) × gap angle (切れ目の広さ)
- *
- * X = クロスヘア (中心に隙間のある十字 + 中心ドット)
- *   変数: strokeWidth は U に合わせて統一
- *
- * 弧の座標計算:
- *   gap angle G° を上部 (270°) に中心を置き、
- *   start = (-90 + G/2)° → 円弧の右端
- *   end   = (-90 - G/2)° → 円弧の左端
- *   A16,16 0 1,1 → 大弧を時計回りで描画
+ * viewBox 48x48、中心(24,24)、半径16 の円弧ベース
  */
-import { useVariant } from '../context/VariantContext'
+import { useVariant, useDesignParams } from '../context/VariantContext'
 
-/**
- * ランドルト環のパス生成ヘルパー
- * @param {number} gap - 切れ目の角度 (degrees)
- * @returns {string} SVG path d 属性
- */
+/** ランドルト環パス生成 */
 function landoltPath(gap) {
-  const r = 16
-  const cx = 24, cy = 24
+  const r = 16, cx = 24, cy = 24
   const toRad = (deg) => (deg * Math.PI) / 180
-
-  // 右端: -90 + gap/2
   const a1 = toRad(-90 + gap / 2)
+  const a2 = toRad(-90 - gap / 2)
   const sx = (cx + r * Math.cos(a1)).toFixed(1)
   const sy = (cy + r * Math.sin(a1)).toFixed(1)
-
-  // 左端: -90 - gap/2
-  const a2 = toRad(-90 - gap / 2)
   const ex = (cx + r * Math.cos(a2)).toFixed(1)
   const ey = (cy + r * Math.sin(a2)).toFixed(1)
-
   return `M${sx},${sy} A16,16 0 1,1 ${ex},${ey}`
 }
 
-/**
- * クロスヘアの SVG 要素生成
- * @param {string} c - color
- * @param {number} sw - strokeWidth
- * @param {number} gapR - 中心の隙間半径 (px)
- * @param {number} dotR - 中心ドットの半径
- */
+/** クロスヘア生成。swRatio でスライダー値を反映 */
 function crosshair(c, sw, gapR = 5, dotR = 3) {
   const inner = 24 - gapR
   const outer = 24 + gapR
   return (<>
-    <line x1="8"     y1="24" x2={inner} y2="24" stroke={c} strokeWidth={sw} strokeLinecap="butt" />
-    <line x1={outer}  y1="24" x2="40"   y2="24" stroke={c} strokeWidth={sw} strokeLinecap="butt" />
-    <line x1="24" y1="8"     x2="24" y2={inner} stroke={c} strokeWidth={sw} strokeLinecap="butt" />
-    <line x1="24" y1={outer}  x2="24" y2="40"   stroke={c} strokeWidth={sw} strokeLinecap="butt" />
+    <line x1="8"    y1="24" x2={inner} y2="24" stroke={c} strokeWidth={sw} strokeLinecap="butt" />
+    <line x1={outer} y1="24" x2="40"   y2="24" stroke={c} strokeWidth={sw} strokeLinecap="butt" />
+    <line x1="24" y1="8"    x2="24" y2={inner} stroke={c} strokeWidth={sw} strokeLinecap="butt" />
+    <line x1="24" y1={outer} x2="24" y2="40"   stroke={c} strokeWidth={sw} strokeLinecap="butt" />
     <circle cx="24" cy="24" r={dotR} fill={c} />
   </>)
 }
 
-// ── 10バリエーション定義 ──
-// 軸1: strokeWidth (線の太さ)  3 → 12
-// 軸2: gap angle (切れ目の広さ) 30° → 150°
-
+/**
+ * 各バリエーション定義
+ * U(c, sw) / X(c, sw) — sw = コントローラーの STRK 値 (1-14)
+ * バリエーション固有の太さ比率をベースに sw を直接使用
+ * gap angle はバリエーション固有 (切り替えで変化するパラメータ)
+ */
 const variants = [
-  // 0: Landolt — ★合格★ ベースライン
-  //    sw=8, gap=90°, 中庸なバランス
+  // 0: Landolt — ベースライン, gap=90°
   {
     name: 'Landolt',
-    U: (c) => (
-      <path d={landoltPath(90)} stroke={c} strokeWidth="8" strokeLinecap="butt" fill="none" />
+    gap: 90,
+    U: (c, sw) => (
+      <path d={landoltPath(90)} stroke={c} strokeWidth={sw} strokeLinecap="butt" fill="none" />
     ),
-    X: (c) => crosshair(c, 6, 5, 3),
+    X: (c, sw) => crosshair(c, sw * 0.75, 5, sw * 0.35),
   },
-
-  // 1: Hairline — 極細、同じ開口
-  //    sw=2.5, gap=90°
+  // 1: Hairline — gap=90°, 細め比率
   {
     name: 'Hairline',
-    U: (c) => (
-      <path d={landoltPath(90)} stroke={c} strokeWidth="2.5" strokeLinecap="butt" fill="none" />
+    gap: 90,
+    U: (c, sw) => (
+      <path d={landoltPath(90)} stroke={c} strokeWidth={sw * 0.3} strokeLinecap="butt" fill="none" />
     ),
-    X: (c) => crosshair(c, 2, 5, 1.5),
+    X: (c, sw) => crosshair(c, sw * 0.25, 5, sw * 0.15),
   },
-
-  // 2: Bold — 太い
-  //    sw=11, gap=90°
+  // 2: Bold — gap=90°, 太め比率
   {
     name: 'Bold',
-    U: (c) => (
-      <path d={landoltPath(90)} stroke={c} strokeWidth="11" strokeLinecap="butt" fill="none" />
+    gap: 90,
+    U: (c, sw) => (
+      <path d={landoltPath(90)} stroke={c} strokeWidth={sw * 1.3} strokeLinecap="butt" fill="none" />
     ),
-    X: (c) => crosshair(c, 9, 5, 4),
+    X: (c, sw) => crosshair(c, sw * 1.1, 5, sw * 0.45),
   },
-
-  // 3: Ultra — 極太
-  //    sw=14, gap=90°, ほぼベタ塗り感
+  // 3: Ultra — gap=90°, 極太
   {
     name: 'Ultra',
-    U: (c) => (
-      <path d={landoltPath(90)} stroke={c} strokeWidth="14" strokeLinecap="butt" fill="none" />
+    gap: 90,
+    U: (c, sw) => (
+      <path d={landoltPath(90)} stroke={c} strokeWidth={sw * 1.6} strokeLinecap="butt" fill="none" />
     ),
-    X: (c) => crosshair(c, 12, 5, 5),
+    X: (c, sw) => crosshair(c, sw * 1.4, 5, sw * 0.55),
   },
-
-  // 4: Narrow — 切れ目が狭い（ほぼ閉じた環）
-  //    sw=8, gap=35°
+  // 4: Narrow — gap=35°
   {
     name: 'Narrow',
-    U: (c) => (
-      <path d={landoltPath(35)} stroke={c} strokeWidth="8" strokeLinecap="butt" fill="none" />
+    gap: 35,
+    U: (c, sw) => (
+      <path d={landoltPath(35)} stroke={c} strokeWidth={sw} strokeLinecap="butt" fill="none" />
     ),
-    X: (c) => crosshair(c, 6, 3, 2),
+    X: (c, sw) => crosshair(c, sw * 0.75, 3, sw * 0.25),
   },
-
-  // 5: Wide — 切れ目が広い
-  //    sw=8, gap=140°
+  // 5: Wide — gap=140°
   {
     name: 'Wide',
-    U: (c) => (
-      <path d={landoltPath(140)} stroke={c} strokeWidth="8" strokeLinecap="butt" fill="none" />
+    gap: 140,
+    U: (c, sw) => (
+      <path d={landoltPath(140)} stroke={c} strokeWidth={sw} strokeLinecap="butt" fill="none" />
     ),
-    X: (c) => crosshair(c, 6, 7, 3),
+    X: (c, sw) => crosshair(c, sw * 0.75, 7, sw * 0.35),
   },
-
-  // 6: Light Wide — 細線 + 広開口
-  //    sw=4, gap=130°
+  // 6: Light Wide — gap=130°, 細め
   {
     name: 'Light Wide',
-    U: (c) => (
-      <path d={landoltPath(130)} stroke={c} strokeWidth="4" strokeLinecap="butt" fill="none" />
+    gap: 130,
+    U: (c, sw) => (
+      <path d={landoltPath(130)} stroke={c} strokeWidth={sw * 0.5} strokeLinecap="butt" fill="none" />
     ),
-    X: (c) => crosshair(c, 3, 6, 2),
+    X: (c, sw) => crosshair(c, sw * 0.4, 6, sw * 0.2),
   },
-
-  // 7: Bold Narrow — 太線 + 狭開口
-  //    sw=11, gap=45°
+  // 7: Bold Narrow — gap=45°, 太め
   {
     name: 'Bold Narrow',
-    U: (c) => (
-      <path d={landoltPath(45)} stroke={c} strokeWidth="11" strokeLinecap="butt" fill="none" />
+    gap: 45,
+    U: (c, sw) => (
+      <path d={landoltPath(45)} stroke={c} strokeWidth={sw * 1.3} strokeLinecap="butt" fill="none" />
     ),
-    X: (c) => crosshair(c, 9, 3, 4),
+    X: (c, sw) => crosshair(c, sw * 1.1, 3, sw * 0.45),
   },
-
-  // 8: Medium — 中間の太さ + やや狭い
-  //    sw=6, gap=65°
+  // 8: Medium — gap=65°
   {
     name: 'Medium',
-    U: (c) => (
-      <path d={landoltPath(65)} stroke={c} strokeWidth="6" strokeLinecap="butt" fill="none" />
+    gap: 65,
+    U: (c, sw) => (
+      <path d={landoltPath(65)} stroke={c} strokeWidth={sw * 0.7} strokeLinecap="butt" fill="none" />
     ),
-    X: (c) => crosshair(c, 5, 4, 2.5),
+    X: (c, sw) => crosshair(c, sw * 0.6, 4, sw * 0.28),
   },
-
-  // 9: Extreme — 極太 + 超広開口
-  //    sw=14, gap=160°, ほぼ半円
+  // 9: Extreme — gap=160°, 極太
   {
     name: 'Extreme',
-    U: (c) => (
-      <path d={landoltPath(160)} stroke={c} strokeWidth="14" strokeLinecap="butt" fill="none" />
+    gap: 160,
+    U: (c, sw) => (
+      <path d={landoltPath(160)} stroke={c} strokeWidth={sw * 1.6} strokeLinecap="butt" fill="none" />
     ),
-    X: (c) => crosshair(c, 12, 8, 5),
+    X: (c, sw) => crosshair(c, sw * 1.4, 8, sw * 0.55),
   },
 ]
 
 export default variants
 
-/**
- * VariantU — 現在バリエーションの U シンボル (ランドルト環)
- */
+/** VariantU — コントローラーの strokeW を反映 */
 export function VariantU({ color = '#1a1a1a', ...props }) {
   const v = useVariant()
+  const { strokeW } = useDesignParams()
   return (
     <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      {variants[v].U(color)}
+      {variants[v].U(color, strokeW)}
     </svg>
   )
 }
 
-/**
- * VariantX — 現在バリエーションの X シンボル (クロスヘア)
- */
+/** VariantX — コントローラーの strokeW を反映 */
 export function VariantX({ color = '#1a1a1a', ...props }) {
   const v = useVariant()
+  const { strokeW } = useDesignParams()
   return (
     <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      {variants[v].X(color)}
+      {variants[v].X(color, strokeW)}
     </svg>
   )
 }
