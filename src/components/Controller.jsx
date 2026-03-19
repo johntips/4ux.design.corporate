@@ -100,13 +100,13 @@ export default function Controller() {
         <div className="ctrl-sep" />
 
         <Fader label="SIZE" value={tileSize} min={16} max={600} step={4}
-          display={`${tileSize}`} onChange={(v) => setParam('tileSize', v)} />
+          display={`${tileSize}`} onChange={(v) => setParam('tileSize', v)} haptics={haptics} />
         <Fader label="GAP" value={tileGap} min={-(tileSize - 4)} max={tileSize} step={1}
-          display={`${tileGap}`} onChange={(v) => setParam('tileGap', v)} />
+          display={`${tileGap}`} onChange={(v) => setParam('tileGap', v)} haptics={haptics} />
         <Fader label="STRK" value={strokeW} min={1} max={14} step={1}
-          display={`${strokeW}`} onChange={(v) => setParam('strokeW', v)} />
+          display={`${strokeW}`} onChange={(v) => setParam('strokeW', v)} haptics={haptics} />
         <Fader label="OPAC" value={opacity} min={0.02} max={0.5} step={0.02}
-          display={`${(opacity * 100).toFixed(0)}%`} onChange={(v) => setParam('opacity', v)} />
+          display={`${(opacity * 100).toFixed(0)}%`} onChange={(v) => setParam('opacity', v)} haptics={haptics} />
 
         <div className="ctrl-footer">shift+f</div>
       </div>
@@ -121,26 +121,34 @@ export default function Controller() {
  * ホイール下/↓: -step
  * Shift 押しながら: 10倍刻み
  */
-function Fader({ label, value, min, max, step, display, onChange }) {
+function Fader({ label, value, min, max, step, display, onChange, haptics }) {
+  const prevRef = useRef(value)
   const clamp = (v) => Math.min(max, Math.max(min, v))
+
+  // 値が変わるたびに短い振動 (SP のみ実質発動)
+  const handleChange = (newVal) => {
+    if (newVal !== prevRef.current) {
+      haptics.tap()  // 15ms のコツッとした振動
+      prevRef.current = newVal
+    }
+    onChange(newVal)
+  }
+
   const nudge = (dir, fine) => {
     const amount = fine ? step : step * 10
-    onChange(clamp(value + dir * amount))
+    handleChange(clamp(value + dir * amount))
   }
 
   const onWheel = (e) => {
     e.preventDefault()
-    const dir = e.deltaY < 0 ? 1 : -1
-    nudge(dir, !e.shiftKey)
+    nudge(e.deltaY < 0 ? 1 : -1, !e.shiftKey)
   }
 
   const onKeyDown = (e) => {
     if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
-      e.preventDefault()
-      nudge(1, !e.shiftKey)
+      e.preventDefault(); nudge(1, !e.shiftKey)
     } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
-      e.preventDefault()
-      nudge(-1, !e.shiftKey)
+      e.preventDefault(); nudge(-1, !e.shiftKey)
     }
   }
 
@@ -150,7 +158,7 @@ function Fader({ label, value, min, max, step, display, onChange }) {
       <div className="fader-track">
         <input
           type="range" min={min} max={max} step={step} value={value}
-          onChange={(e) => onChange(parseFloat(e.target.value))}
+          onChange={(e) => handleChange(parseFloat(e.target.value))}
           onKeyDown={onKeyDown}
           className="fader-input"
         />

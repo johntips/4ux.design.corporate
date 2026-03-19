@@ -460,70 +460,83 @@
   }
 
   .hero {
-    padding: 1.5rem;
+    padding: 2.5rem 2rem;
     min-height: 100svh;
   }
 
   .hero-logo {
-    grid-template-columns: repeat(5, 40px);
-    gap: 4px;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(5, 36px);
+    gap: 6px;
+    margin-bottom: 2.5rem;
   }
 
   .hero-logo svg {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
   }
 
   .hero h1 {
-    font-size: 1.8rem;
-    margin-bottom: 1rem;
+    font-size: 1.6rem;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
   }
 
   .hero .subtitle {
-    font-size: 0.85rem;
-    line-height: 1.8;
+    font-size: 0.82rem;
+    line-height: 2;
+    letter-spacing: 0.03em;
   }
 
   .poem {
-    max-width: 300px;
+    max-width: 100%;
+    padding: 0 0.5rem;
   }
 
   .section {
-    padding: 4rem 1.5rem;
+    padding: 5rem 2rem;
   }
 
   .section h2 {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
+    margin-bottom: 2rem;
+  }
+
+  .section > p {
+    font-size: 0.9rem;
+    line-height: 2;
+    padding: 0 0.5rem;
   }
 
   .values-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+    margin-top: 2.5rem;
   }
 
   .value-card {
-    padding: 1.2rem;
+    padding: 1.5rem 1.8rem;
   }
 
   .value-card h3 {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    margin-bottom: 0.8rem;
   }
 
   .value-card p {
-    font-size: 0.8rem;
+    font-size: 0.82rem;
+    line-height: 1.8;
   }
 
   .pattern-strip {
-    padding: 1.5rem 0;
+    padding: 2rem 0;
   }
 
   .footer {
-    padding: 3rem 1.5rem;
+    padding: 4rem 2rem;
   }
 
   .scroll-indicator {
-    bottom: 1.5rem;
+    bottom: 2rem;
   }
 
   .controller-wrap {
@@ -537,16 +550,34 @@
 }
 
 @media (max-width: 480px) {
-  .values-grid {
-    grid-template-columns: 1fr;
+  .hero {
+    padding: 2.5rem 1.5rem;
   }
 
   .hero-logo {
-    grid-template-columns: repeat(5, 36px);
+    grid-template-columns: repeat(5, 30px);
+    gap: 5px;
   }
 
   .hero-logo svg {
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .hero h1 {
+    font-size: 1.4rem;
+  }
+
+  .hero .subtitle {
+    font-size: 0.78rem;
+    line-height: 2.1;
+  }
+
+  .section {
+    padding: 4rem 1.5rem;
+  }
+
+  .value-card {
+    padding: 1.3rem 1.5rem;
   }
 }
