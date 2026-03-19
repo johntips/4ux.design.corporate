@@ -16,7 +16,7 @@ export default function Footer() {
         <VariantU style={{ transform: 'rotate(180deg)' }} />
         <VariantX style={{ transform: 'rotate(45deg)' }} />
       </div>
-      <p>uuuux.design — 4 dimensions of You, for You.</p>
+      <p>uuuux.design — 反発と同調のあいだに、あなたのための設計がある。</p>
       <p style={{ marginTop: '0.5rem', fontSize: '0.7rem', opacity: 0.4 }}>
         Shift+F to switch — variant {v}: {variants[v].name}
       </p>
