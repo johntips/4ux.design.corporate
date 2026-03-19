@@ -1,0 +1,225 @@
+/* ── Tile Grid (interactive background) ── */
+.tile-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--tile-size));
+  grid-template-rows: repeat(var(--rows), var(--tile-size));
+  justify-content: center;
+  align-content: center;
+  pointer-events: none;
+}
+
+.tile {
+  width: var(--tile-size);
+  height: var(--tile-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+}
+
+.tile svg {
+  width: 52%;
+  height: 52%;
+  opacity: 0.12;
+  transition: opacity 0.3s ease;
+}
+
+.tile.near svg {
+  opacity: 0.35;
+}
+
+/* ── Content ── */
+.content {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Hero ── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  position: relative;
+}
+
+.hero-logo {
+  display: grid;
+  grid-template-columns: repeat(4, 56px);
+  gap: 6px;
+  margin-bottom: 3rem;
+}
+
+.hero-logo svg {
+  width: 56px;
+  height: 56px;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.06));
+}
+
+.hero h1 {
+  font-size: clamp(2.2rem, 5vw, 4.2rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  margin-bottom: 1.2rem;
+}
+
+.hero .subtitle {
+  font-size: clamp(0.95rem, 1.8vw, 1.2rem);
+  font-weight: 300;
+  color: var(--fg-muted);
+  max-width: 500px;
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+}
+
+/* ── Glass card ── */
+.glass {
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px var(--glass-shadow);
+}
+
+/* ── Sections ── */
+.section {
+  padding: 8rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.section h2 {
+  font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.5rem;
+}
+
+.section p {
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--fg-muted);
+  max-width: 560px;
+  line-height: 1.7;
+}
+
+/* ── Pattern Strip (horizontal scroll) ── */
+.pattern-strip {
+  width: 100%;
+  overflow: hidden;
+  padding: 2.5rem 0;
+}
+
+.pattern-strip-inner {
+  display: flex;
+  gap: 0;
+  width: max-content;
+}
+
+.pattern-strip svg {
+  width: var(--tile-size);
+  height: var(--tile-size);
+  flex-shrink: 0;
+  opacity: 0.2;
+}
+
+/* ── Values ── */
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  max-width: 900px;
+  width: 100%;
+  margin-top: 3rem;
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .values-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.value-card {
+  padding: 1.8rem;
+}
+
+.value-card svg {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 1rem;
+  opacity: 0.6;
+}
+
+.value-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+  letter-spacing: -0.01em;
+}
+
+.value-card p {
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+  line-height: 1.6;
+}
+
+/* ── Footer ── */
+.footer {
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.footer .logo-mark {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  margin-bottom: 1.5rem;
+}
+
+.footer .logo-mark svg {
+  width: 24px;
+  height: 24px;
+  opacity: 0.3;
+}
+
+.footer p {
+  color: var(--fg-muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+/* ── Scroll indicator ── */
+.scroll-indicator {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--fg-muted);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.scroll-line {
+  width: 1px;
+  height: 32px;
+  background: linear-gradient(to bottom, var(--fg-muted), transparent);
+}
