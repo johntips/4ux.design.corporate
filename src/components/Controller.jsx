@@ -114,14 +114,44 @@ export default function Controller() {
   )
 }
 
+/**
+ * Fader — ホイール & 上下キーで微調整可能なスライダー
+ *
+ * ホイール上/↑: +step
+ * ホイール下/↓: -step
+ * Shift 押しながら: 10倍刻み
+ */
 function Fader({ label, value, min, max, step, display, onChange }) {
+  const clamp = (v) => Math.min(max, Math.max(min, v))
+  const nudge = (dir, fine) => {
+    const amount = fine ? step : step * 10
+    onChange(clamp(value + dir * amount))
+  }
+
+  const onWheel = (e) => {
+    e.preventDefault()
+    const dir = e.deltaY < 0 ? 1 : -1
+    nudge(dir, !e.shiftKey)
+  }
+
+  const onKeyDown = (e) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+      e.preventDefault()
+      nudge(1, !e.shiftKey)
+    } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+      e.preventDefault()
+      nudge(-1, !e.shiftKey)
+    }
+  }
+
   return (
-    <div className="fader">
+    <div className="fader" onWheel={onWheel}>
       <span className="fader-label">{label}</span>
       <div className="fader-track">
         <input
           type="range" min={min} max={max} step={step} value={value}
           onChange={(e) => onChange(parseFloat(e.target.value))}
+          onKeyDown={onKeyDown}
           className="fader-input"
         />
       </div>
