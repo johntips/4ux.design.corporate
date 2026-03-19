@@ -22,8 +22,8 @@ export const VARIANT_COUNT = 10
 
 const DEFAULT_PARAMS = {
   variant: 0,
-  tileSize: 72,
-  tileGap: 0,
+  tileSize: 384,
+  tileGap: -188,
   strokeW: 10,
   opacity: 0.06,
 }
