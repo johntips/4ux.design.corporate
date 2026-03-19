@@ -18,7 +18,7 @@ import { useHaptics } from '../hooks/useHaptics'
 
 const VariantContext = createContext(null)
 
-export const VARIANT_COUNT = 10
+export const VARIANT_COUNT = 30
 
 const DEFAULT_PARAMS = {
   variant: 0,

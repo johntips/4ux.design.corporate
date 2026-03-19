@@ -85,17 +85,23 @@ export default function Controller() {
           <span className="ctrl-ptn-name">{variants[variant].name}</span>
         </div>
 
-        <div className="ctrl-steps">
-          {Array.from({ length: VARIANT_COUNT }, (_, i) => (
-            <button
-              key={i}
-              className={`ctrl-step ${i === variant ? 'active' : ''}`}
-              onClick={() => { setParam('variant', i); haptics.tap() }}
-            >
-              {i}
-            </button>
-          ))}
-        </div>
+        {/* ステップシーケンサー 3行×10列 */}
+        {[0, 10, 20].map((row) => (
+          <div key={row} className="ctrl-steps">
+            {Array.from({ length: 10 }, (_, j) => {
+              const i = row + j
+              return (
+                <button
+                  key={i}
+                  className={`ctrl-step ${i === variant ? 'active' : ''}`}
+                  onClick={() => { setParam('variant', i); haptics.tap() }}
+                >
+                  {i}
+                </button>
+              )
+            })}
+          </div>
+        ))}
 
         <div className="ctrl-sep" />
 
