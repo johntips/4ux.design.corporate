@@ -80,14 +80,16 @@ export default function TileGrid() {
     return () => cancelAnimationFrame(rafRef.current)
   }, [tiles, tileSize, tileGap, baseOpacity, mouse])
 
+  // セルサイズ = tileSize + gap。負 gap ならセル < タイルで重なる
+  const cellSize = Math.max(tileSize + tileGap, 4) // 最小4pxでクラッシュ防止
+
   return (
     <div
       className="tile-grid"
       style={{
         '--cols': cols,
         '--rows': rows,
-        '--tile-size': `${tileSize}px`,
-        gap: `${tileGap}px`,
+        '--tile-size': `${cellSize}px`,  // グリッドトラック = セルサイズ
       }}
     >
       {tiles.map((tile, i) => (

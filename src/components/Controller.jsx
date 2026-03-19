@@ -101,7 +101,7 @@ export default function Controller() {
 
         <Fader label="SIZE" value={tileSize} min={16} max={400} step={4}
           display={`${tileSize}`} onChange={(v) => setParam('tileSize', v)} />
-        <Fader label="GAP" value={tileGap} min={-20} max={80} step={2}
+        <Fader label="GAP" value={tileGap} min={-60} max={120} step={1}
           display={`${tileGap}`} onChange={(v) => setParam('tileGap', v)} />
         <Fader label="STRK" value={strokeW} min={1} max={14} step={1}
           display={`${strokeW}`} onChange={(v) => setParam('strokeW', v)} />

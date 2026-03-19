@@ -12,12 +12,11 @@
 }
 
 .tile {
-  width: var(--tile-size);
-  height: var(--tile-size);
   display: flex;
   align-items: center;
   justify-content: center;
   will-change: transform;
+  overflow: visible; /* 負 gap でセル < タイルの時にはみ出して重なる */
 }
 
 .tile svg {
