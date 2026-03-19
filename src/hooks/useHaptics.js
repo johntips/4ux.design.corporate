@@ -1,8 +1,8 @@
 /**
  * useHaptics — 振動フィードバック
  *
- * web-haptics ライブラリ + navigator.vibrate フォールバック
- * スライダー操作中の連続発火にも対応（tick はスロットル付き）
+ * slide(ratio) — スライダー用。0→1 で振動が 5ms→80ms に比例
+ *   握った瞬間に nudge、スライド中は値に応じた buzz 強度
  */
 import { useRef, useEffect, useCallback } from 'react'
 
@@ -19,16 +19,13 @@ async function getHaptics() {
   }
 }
 
-/** navigator.vibrate を直接叩くフォールバック */
 function vibrateRaw(ms) {
-  try {
-    navigator?.vibrate?.(ms)
-  } catch { /* noop */ }
+  try { navigator?.vibrate?.(ms) } catch { /* noop */ }
 }
 
 export function useHaptics() {
   const ready = useRef(false)
-  const lastTick = useRef(0)
+  const lastSlide = useRef(0)
 
   useEffect(() => {
     getHaptics().then((h) => { if (h) ready.current = true })
@@ -38,23 +35,38 @@ export function useHaptics() {
     if (ready.current && hapticsInstance) {
       hapticsInstance.trigger(preset)
     }
-    // フォールバック: web-haptics が効かない場合も navigator.vibrate で試す
     if (typeof preset === 'number') vibrateRaw(preset)
   }, [])
 
   /**
-   * tick — スライダー用スロットル付き振動
-   * 最小間隔 40ms で発火（25fps 相当）。連打しても詰まらない。
+   * slide(ratio) — スライダースワイプ用
+   *
+   * @param {number} ratio - 0→1 正規化された値 (min→max)
+   *
+   * 振動の長さ: 5ms + ratio * 75ms = 5ms〜80ms
+   * スロットル: 50ms 間隔 (値が高いほど振動が長い = buzz 感が増す)
    */
-  const tick = useCallback(() => {
+  const slide = useCallback((ratio) => {
     const now = performance.now()
-    if (now - lastTick.current < 40) return  // 40ms 以内はスキップ
-    lastTick.current = now
-    vibrateRaw(8)  // 8ms の極短バイブ
+    if (now - lastSlide.current < 50) return
+    lastSlide.current = now
+
+    const clamped = Math.max(0, Math.min(1, ratio))
+    const duration = Math.round(5 + clamped * 75) // 5ms → 80ms
+
+    vibrateRaw(duration)
     if (ready.current && hapticsInstance) {
-      hapticsInstance.trigger(8)
+      hapticsInstance.trigger(duration)
     }
   }, [])
+
+  /**
+   * grab — スライダーを握った瞬間
+   */
+  const grab = useCallback(() => {
+    trigger('nudge')
+    vibrateRaw(20)
+  }, [trigger])
 
   return {
     nudge:   () => trigger('nudge'),
@@ -63,6 +75,7 @@ export function useHaptics() {
     buzz:    () => trigger('buzz'),
     tap:     () => { trigger(15); vibrateRaw(15) },
     pulse:   () => trigger([20, 40, 20]),
-    tick,    // スライダー用
+    slide,   // スライダースワイプ用 (ratio: 0→1)
+    grab,    // スライダー握り始め
   }
 }

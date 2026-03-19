@@ -125,14 +125,18 @@ function Fader({ label, value, min, max, step, display, onChange, haptics }) {
   const prevRef = useRef(value)
   const clamp = (v) => Math.min(max, Math.max(min, v))
 
-  // 値が変わるたびに極短振動 (スロットル付きで滑らか)
+  // 値の正規化率を計算して、値が大きいほど強い vibrate
   const handleChange = (newVal) => {
     if (newVal !== prevRef.current) {
-      haptics.tick()  // 8ms × スロットル40ms = 小気味よいクリック感
+      const ratio = (newVal - min) / (max - min) // 0→1
+      haptics.slide(ratio)
       prevRef.current = newVal
     }
     onChange(newVal)
   }
+
+  // スライダーを握った瞬間
+  const handleGrab = () => haptics.grab()
 
   const nudge = (dir, fine) => {
     const amount = fine ? step : step * 10
@@ -159,6 +163,8 @@ function Fader({ label, value, min, max, step, display, onChange, haptics }) {
         <input
           type="range" min={min} max={max} step={step} value={value}
           onChange={(e) => handleChange(parseFloat(e.target.value))}
+          onTouchStart={handleGrab}
+          onMouseDown={handleGrab}
           onKeyDown={onKeyDown}
           className="fader-input"
         />
