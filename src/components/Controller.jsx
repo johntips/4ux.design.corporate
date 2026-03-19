@@ -122,21 +122,18 @@ export default function Controller() {
  * Shift 押しながら: 10倍刻み
  */
 function Fader({ label, value, min, max, step, display, onChange, haptics }) {
-  const prevRef = useRef(value)
   const clamp = (v) => Math.min(max, Math.max(min, v))
+  const range = max - min || 1 // ゼロ除算防止
 
-  // 値の正規化率を計算して、値が大きいほど強い vibrate
+  // 値変更のたびに haptics.slide(ratio) — スロットルは slide 側で管理
   const handleChange = (newVal) => {
-    if (newVal !== prevRef.current) {
-      const ratio = (newVal - min) / (max - min) // 0→1
-      haptics.slide(ratio)
-      prevRef.current = newVal
-    }
+    const ratio = (newVal - min) / range // 0→1
+    haptics.slide(ratio)
     onChange(newVal)
   }
 
-  // スライダーを握った瞬間
   const handleGrab = () => haptics.grab()
+  const handleRelease = () => haptics.release()
 
   const nudge = (dir, fine) => {
     const amount = fine ? step : step * 10
@@ -164,7 +161,9 @@ function Fader({ label, value, min, max, step, display, onChange, haptics }) {
           type="range" min={min} max={max} step={step} value={value}
           onChange={(e) => handleChange(parseFloat(e.target.value))}
           onTouchStart={handleGrab}
+          onTouchEnd={handleRelease}
           onMouseDown={handleGrab}
+          onMouseUp={handleRelease}
           onKeyDown={onKeyDown}
           className="fader-input"
         />

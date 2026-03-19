@@ -1,8 +1,12 @@
 /**
  * useHaptics — 振動フィードバック
  *
- * slide(ratio) — スライダー用。0→1 で振動が 5ms→80ms に比例
- *   握った瞬間に nudge、スライド中は値に応じた buzz 強度
+ * slide(ratio) — スライダー用。値に応じた強さで振動
+ * grab() — スライダーを握った瞬間の振動
+ *
+ * 戦略: touchstart で vibrate を起動し「ユーザージェスチャ」コンテキストを確保。
+ * スライド中は setInterval で振動パターンを繰り返し更新。
+ * ratio が変わるとインターバル内の振動時間が変わる。
  */
 import { useRef, useEffect, useCallback } from 'react'
 
@@ -19,13 +23,15 @@ async function getHaptics() {
   }
 }
 
-function vibrateRaw(ms) {
-  try { navigator?.vibrate?.(ms) } catch { /* noop */ }
+function vibrateRaw(pattern) {
+  try { navigator?.vibrate?.(pattern) } catch { /* noop */ }
 }
 
 export function useHaptics() {
   const ready = useRef(false)
-  const lastSlide = useRef(0)
+  const slideRatio = useRef(0)    // 現在のスライド値 (0→1)
+  const slideActive = useRef(false)
+  const intervalRef = useRef(null)
 
   useEffect(() => {
     getHaptics().then((h) => { if (h) ready.current = true })
@@ -39,34 +45,54 @@ export function useHaptics() {
   }, [])
 
   /**
-   * slide(ratio) — スライダースワイプ用
-   *
-   * @param {number} ratio - 0→1 正規化された値 (min→max)
-   *
-   * 振動の長さ: 5ms + ratio * 75ms = 5ms〜80ms
-   * スロットル: 50ms 間隔 (値が高いほど振動が長い = buzz 感が増す)
+   * slide(ratio) — スライド中の値を更新
+   * 実際の振動は slideLoop 内で ratio に基づいて発生
    */
   const slide = useCallback((ratio) => {
-    const now = performance.now()
-    if (now - lastSlide.current < 50) return
-    lastSlide.current = now
-
-    const clamped = Math.max(0, Math.min(1, ratio))
-    const duration = Math.round(5 + clamped * 75) // 5ms → 80ms
-
-    vibrateRaw(duration)
-    if (ready.current && hapticsInstance) {
-      hapticsInstance.trigger(duration)
-    }
+    slideRatio.current = Math.max(0, Math.min(1, ratio))
   }, [])
 
   /**
-   * grab — スライダーを握った瞬間
+   * grab() — スライダーに触れた瞬間
+   * ここで vibrate を最初に呼ぶことでユーザージェスチャコンテキストを確立
+   * + インターバルで振動を継続
    */
   const grab = useCallback(() => {
-    trigger('nudge')
-    vibrateRaw(20)
-  }, [trigger])
+    // 初回の vibrate でコンテキスト確立
+    vibrateRaw(15)
+    if (ready.current && hapticsInstance) {
+      hapticsInstance.trigger('nudge')
+    }
+
+    slideActive.current = true
+
+    // 既存のインターバルをクリア
+    if (intervalRef.current) clearInterval(intervalRef.current)
+
+    // 60ms ごとに ratio に応じた振動を繰り返す
+    intervalRef.current = setInterval(() => {
+      if (!slideActive.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+        return
+      }
+      const r = slideRatio.current
+      const ms = Math.round(5 + r * 50) // 5ms → 55ms
+      vibrateRaw([ms, 60 - ms])  // vibrate パターン: ON, OFF
+    }, 70)
+  }, [])
+
+  /**
+   * release() — スライダーから指を離した
+   */
+  const release = useCallback(() => {
+    slideActive.current = false
+    vibrateRaw(0) // 振動停止
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
+  }, [])
 
   return {
     nudge:   () => trigger('nudge'),
@@ -75,7 +101,8 @@ export function useHaptics() {
     buzz:    () => trigger('buzz'),
     tap:     () => { trigger(15); vibrateRaw(15) },
     pulse:   () => trigger([20, 40, 20]),
-    slide,   // スライダースワイプ用 (ratio: 0→1)
-    grab,    // スライダー握り始め
+    slide,
+    grab,
+    release,
   }
 }
