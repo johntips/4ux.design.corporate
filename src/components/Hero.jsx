@@ -84,7 +84,8 @@ export default function Hero() {
         <div className="hero-tile" onMouseEnter={handleTileHover} onTouchStart={handleTileHover}>
           <VariantU />
         </div>
-        <div className="hero-tile" onMouseEnter={handleTileHover} onTouchStart={handleTileHover}>
+        <div className="hero-tile" onMouseEnter={handleTileHover} onTouchStart={handleTileHover}
+          style={{ transform: 'rotate(45deg)' }}>
           <VariantX />
         </div>
       </div>
