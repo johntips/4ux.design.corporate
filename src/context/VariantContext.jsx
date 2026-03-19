@@ -38,7 +38,15 @@ export function VariantProvider({ children }) {
   }, [haptics])
 
   const setParam = useCallback((key, value) => {
-    setState((s) => ({ ...s, [key]: value }))
+    setState((s) => {
+      const next = { ...s, [key]: value }
+      // SIZE 変更時、GAP が新しい範囲外ならクランプ
+      if (key === 'tileSize') {
+        const minGap = -(value - 4)
+        if (next.tileGap < minGap) next.tileGap = minGap
+      }
+      return next
+    })
   }, [])
 
   useEffect(() => {

@@ -99,9 +99,9 @@ export default function Controller() {
 
         <div className="ctrl-sep" />
 
-        <Fader label="SIZE" value={tileSize} min={16} max={400} step={4}
+        <Fader label="SIZE" value={tileSize} min={16} max={600} step={4}
           display={`${tileSize}`} onChange={(v) => setParam('tileSize', v)} />
-        <Fader label="GAP" value={tileGap} min={-60} max={120} step={1}
+        <Fader label="GAP" value={tileGap} min={-(tileSize - 4)} max={tileSize} step={1}
           display={`${tileGap}`} onChange={(v) => setParam('tileGap', v)} />
         <Fader label="STRK" value={strokeW} min={1} max={14} step={1}
           display={`${strokeW}`} onChange={(v) => setParam('strokeW', v)} />
