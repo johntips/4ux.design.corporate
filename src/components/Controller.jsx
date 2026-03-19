@@ -125,10 +125,10 @@ function Fader({ label, value, min, max, step, display, onChange, haptics }) {
   const prevRef = useRef(value)
   const clamp = (v) => Math.min(max, Math.max(min, v))
 
-  // 値が変わるたびに短い振動 (SP のみ実質発動)
+  // 値が変わるたびに極短振動 (スロットル付きで滑らか)
   const handleChange = (newVal) => {
     if (newVal !== prevRef.current) {
-      haptics.tap()  // 15ms のコツッとした振動
+      haptics.tick()  // 8ms × スロットル40ms = 小気味よいクリック感
       prevRef.current = newVal
     }
     onChange(newVal)

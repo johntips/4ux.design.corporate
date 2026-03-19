@@ -83,10 +83,22 @@
   letter-spacing: 0.02em;
 }
 
-/* ── Poem (Hero subtitle) ── */
-.poem {
-  text-align: left;
-  max-width: 420px;
+/* ── Poem Section (スクロールで段階表示) ── */
+.poem-section {
+  padding: 6rem 2rem 8rem;
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.stanza {
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--fg-muted);
+  line-height: 2;
+  letter-spacing: 0.02em;
 }
 
 /* ── Glass card ── */
@@ -487,9 +499,14 @@
     letter-spacing: 0.03em;
   }
 
-  .poem {
-    max-width: 100%;
-    padding: 0 0.5rem;
+  .poem-section {
+    padding: 4rem 2rem 6rem;
+    gap: 2.5rem;
+  }
+
+  .stanza {
+    font-size: 0.88rem;
+    line-height: 2.1;
   }
 
   .section {

@@ -8,6 +8,7 @@
  */
 import TileGrid from './components/TileGrid'
 import Hero from './components/Hero'
+import Poem from './components/Poem'
 import PatternStrip from './components/PatternStrip'
 import Philosophy from './components/Philosophy'
 import Footer from './components/Footer'
@@ -21,6 +22,7 @@ export default function App() {
       <Controller />
       <div className="content">
         <Hero />
+        <Poem />
         <PatternStrip direction="left" />
         <Philosophy />
         <PatternStrip direction="right" />
