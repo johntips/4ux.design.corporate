@@ -158,40 +158,31 @@ function xStar() {
 //  20 バリエーション定義
 // ═══════════════════════════════════════════
 
+// flat: flatShading で面のファセット感 → コンクリート/石材の質感
 export const VARIANTS_3D = [
-  // ── 30-39: マテリアル変化 (標準形状) ──
-  { name: 'Glass',      depth: 0.06, bevel: 0.02, color: '#f0f0f0', metal: 0.1, rough: 0.02, opacity: 0.3, wire: false, emissive: '#000', emInt: 0,   makeU: uStandard, makeX: xStandard },
-  { name: 'Chrome',     depth: 0.2,  bevel: 0.01, color: '#e0e0e0', metal: 1.0, rough: 0.05, opacity: 1,   wire: false, emissive: '#000', emInt: 0,   makeU: uStandard, makeX: xStandard },
-  { name: 'Wireframe',  depth: 0.06, bevel: 0,    color: '#444',    metal: 0,   rough: 1,    opacity: 1,   wire: true,  emissive: '#000', emInt: 0,   makeU: uStandard, makeX: xStandard },
-  { name: 'Neon 3D',    depth: 0.02, bevel: 0,    color: '#111',    metal: 0,   rough: 1,    opacity: 1,   wire: false, emissive: '#fff', emInt: 1.2, makeU: uStandard, makeX: xStandard },
-  { name: 'Matte',      depth: 0.25, bevel: 0.04, color: '#f4f4f4', metal: 0,   rough: 0.95, opacity: 1,   wire: false, emissive: '#000', emInt: 0,   makeU: uStandard, makeX: xStandard },
-  { name: 'Holo',       depth: 0.04, bevel: 0.02, color: '#e0e0ff', metal: 0.7, rough: 0.15, opacity: 0.45,wire: false, emissive: '#336', emInt: 0.4, makeU: uStandard, makeX: xStandard },
-  { name: 'Voxel',      depth: 0.5,  bevel: 0,    color: '#ddd',    metal: 0.15,rough: 0.7,  opacity: 1,   wire: false, emissive: '#000', emInt: 0,   makeU: uSquare,   makeX: xStandard },
-  { name: 'Clay',       depth: 0.3,  bevel: 0.03, color: '#e8ddd0', metal: 0,   rough: 1.0,  opacity: 1,   wire: false, emissive: '#000', emInt: 0,   makeU: uStandard, makeX: xStandard },
-  { name: 'Deep',       depth: 0.7,  bevel: 0.01, color: '#bbb',    metal: 0.6, rough: 0.25, opacity: 1,   wire: false, emissive: '#000', emInt: 0,   makeU: uStandard, makeX: xStandard },
-  { name: 'Minimal 3D', depth: 0.008,bevel: 0,    color: '#ccc',    metal: 0.2, rough: 0.5,  opacity: 1,   wire: false, emissive: '#000', emInt: 0,   makeU: uStandard, makeX: xStandard },
+  // ── 30-39: マテリアル変化 ──
+  { name: 'Glass',      depth: 0.06, bevel: 0.02, color: '#d8d8d8', metal: 0.05, rough: 0.1,  opacity: 0.3, wire: false, emissive: '#000', emInt: 0,   flat: false, makeU: uStandard, makeX: xStandard },
+  { name: 'Chrome',     depth: 0.2,  bevel: 0.01, color: '#c0c0c0', metal: 0.9,  rough: 0.15, opacity: 1,   wire: false, emissive: '#000', emInt: 0,   flat: false, makeU: uStandard, makeX: xStandard },
+  { name: 'Wireframe',  depth: 0.06, bevel: 0,    color: '#555',    metal: 0,    rough: 1,    opacity: 1,   wire: true,  emissive: '#000', emInt: 0,   flat: false, makeU: uStandard, makeX: xStandard },
+  { name: 'Neon 3D',    depth: 0.02, bevel: 0,    color: '#1a1a1a', metal: 0,    rough: 1,    opacity: 1,   wire: false, emissive: '#eee', emInt: 0.8, flat: false, makeU: uStandard, makeX: xStandard },
+  { name: 'Concrete',   depth: 0.25, bevel: 0,    color: '#a0a0a0', metal: 0,    rough: 1.0,  opacity: 1,   wire: false, emissive: '#000', emInt: 0,   flat: true,  makeU: uStandard, makeX: xStandard },
+  { name: 'Frost',      depth: 0.04, bevel: 0.01, color: '#d0d4d8', metal: 0.15, rough: 0.6,  opacity: 0.5, wire: false, emissive: '#000', emInt: 0,   flat: false, makeU: uStandard, makeX: xStandard },
+  { name: 'Voxel',      depth: 0.5,  bevel: 0,    color: '#b0b0b0', metal: 0.05, rough: 0.85, opacity: 1,   wire: false, emissive: '#000', emInt: 0,   flat: true,  makeU: uSquare,   makeX: xStandard },
+  { name: 'Stone',      depth: 0.3,  bevel: 0,    color: '#8a8a88', metal: 0,    rough: 1.0,  opacity: 1,   wire: false, emissive: '#000', emInt: 0,   flat: true,  makeU: uStandard, makeX: xStandard },
+  { name: 'Deep',       depth: 0.7,  bevel: 0,    color: '#909090', metal: 0.2,  rough: 0.7,  opacity: 1,   wire: false, emissive: '#000', emInt: 0,   flat: true,  makeU: uStandard, makeX: xStandard },
+  { name: 'Minimal 3D', depth: 0.008,bevel: 0,    color: '#b8b8b8', metal: 0.05, rough: 0.8,  opacity: 1,   wire: false, emissive: '#000', emInt: 0,   flat: false, makeU: uStandard, makeX: xStandard },
 
   // ── 40-49: 形状 + マテリアル変化 ──
-  // 40: Cyber — 角張りU + 斜めX、発光シアン
-  { name: 'Cyber',      depth: 0.08, bevel: 0,    color: '#0a0a0a', metal: 0.3, rough: 0.4,  opacity: 1,   wire: false, emissive: '#0ff', emInt: 0.8, makeU: uSquare,   makeX: xDiagonal },
-  // 41: Brutalist — 極太 + 極厚
-  { name: 'Brutalist',  depth: 0.6,  bevel: 0,    color: '#999',    metal: 0.1, rough: 0.9,  opacity: 1,   wire: false, emissive: '#000', emInt: 0,   makeU: uThick,    makeX: xThick },
-  // 42: Hairline3D — 極細 + ワイヤー
-  { name: 'Hairline3D', depth: 0.01, bevel: 0,    color: '#666',    metal: 0,   rough: 1,    opacity: 1,   wire: true,  emissive: '#000', emInt: 0,   makeU: uThin,     makeX: xThin },
-  // 43: Gothic — 深い角U + 星型X、ダーク金属
-  { name: 'Gothic',     depth: 0.35, bevel: 0.02, color: '#2a2a2a', metal: 0.8, rough: 0.3,  opacity: 1,   wire: false, emissive: '#111', emInt: 0.2, makeU: uSquare,   makeX: xStar },
-  // 44: Porcelain — 浅い器U、白磁、丸ベベル
-  { name: 'Porcelain',  depth: 0.15, bevel: 0.05, color: '#fafafa', metal: 0,   rough: 0.8,  opacity: 1,   wire: false, emissive: '#000', emInt: 0,   makeU: uShallow,  makeX: xStandard },
-  // 45: Neon Wire — 細U + 細X、ワイヤー + 発光
-  { name: 'Neon Wire',  depth: 0.03, bevel: 0,    color: '#111',    metal: 0,   rough: 1,    opacity: 1,   wire: true,  emissive: '#f0f', emInt: 1.0, makeU: uThin,     makeX: xThin },
-  // 46: Monolith — リングU + ダイヤX、石碑感
-  { name: 'Monolith',   depth: 0.4,  bevel: 0.01, color: '#888',    metal: 0.3, rough: 0.6,  opacity: 1,   wire: false, emissive: '#000', emInt: 0,   makeU: uRing,     makeX: xDiamond },
-  // 47: Paper — 極薄 + 角U + 白
-  { name: 'Paper',      depth: 0.005,bevel: 0,    color: '#f8f8f8', metal: 0,   rough: 1,    opacity: 0.9, wire: false, emissive: '#000', emInt: 0,   makeU: uSquare,   makeX: xStandard },
-  // 48: Gold — 太い + 金属光沢ゴールド
-  { name: 'Gold',       depth: 0.2,  bevel: 0.03, color: '#d4a843', metal: 1.0, rough: 0.2,  opacity: 1,   wire: false, emissive: '#000', emInt: 0,   makeU: uThick,    makeX: xThick },
-  // 49: Silver — Gold と同じ形状、シルバー光沢
-  { name: 'Silver',     depth: 0.2,  bevel: 0.03, color: '#d0d0d8', metal: 1.0, rough: 0.15, opacity: 1,   wire: false, emissive: '#000', emInt: 0,   makeU: uThick,    makeX: xThick },
+  { name: 'Cyber',      depth: 0.08, bevel: 0,    color: '#1a1a1a', metal: 0.2,  rough: 0.6,  opacity: 1,   wire: false, emissive: '#0aa', emInt: 0.6, flat: false, makeU: uSquare,   makeX: xDiagonal },
+  { name: 'Brutalist',  depth: 0.6,  bevel: 0,    color: '#787878', metal: 0,    rough: 1.0,  opacity: 1,   wire: false, emissive: '#000', emInt: 0,   flat: true,  makeU: uThick,    makeX: xThick },
+  { name: 'Hairline3D', depth: 0.01, bevel: 0,    color: '#777',    metal: 0,    rough: 1,    opacity: 1,   wire: true,  emissive: '#000', emInt: 0,   flat: false, makeU: uThin,     makeX: xThin },
+  { name: 'Gothic',     depth: 0.35, bevel: 0,    color: '#3a3a3a', metal: 0.4,  rough: 0.7,  opacity: 1,   wire: false, emissive: '#000', emInt: 0,   flat: true,  makeU: uSquare,   makeX: xStar },
+  { name: 'Porcelain',  depth: 0.15, bevel: 0.03, color: '#e8e8e8', metal: 0,    rough: 0.85, opacity: 1,   wire: false, emissive: '#000', emInt: 0,   flat: false, makeU: uShallow,  makeX: xStandard },
+  { name: 'Neon Wire',  depth: 0.03, bevel: 0,    color: '#222',    metal: 0,    rough: 1,    opacity: 1,   wire: true,  emissive: '#c0c', emInt: 0.7, flat: false, makeU: uThin,     makeX: xThin },
+  { name: 'Monolith',   depth: 0.4,  bevel: 0,    color: '#6a6a6a', metal: 0.1,  rough: 0.95, opacity: 1,   wire: false, emissive: '#000', emInt: 0,   flat: true,  makeU: uRing,     makeX: xDiamond },
+  { name: 'Paper',      depth: 0.005,bevel: 0,    color: '#d0d0d0', metal: 0,    rough: 1,    opacity: 0.85,wire: false, emissive: '#000', emInt: 0,   flat: false, makeU: uSquare,   makeX: xStandard },
+  { name: 'Gold',       depth: 0.2,  bevel: 0.02, color: '#b8973a', metal: 0.9,  rough: 0.3,  opacity: 1,   wire: false, emissive: '#000', emInt: 0,   flat: false, makeU: uThick,    makeX: xThick },
+  { name: 'Silver',     depth: 0.2,  bevel: 0.02, color: '#b0b0b8', metal: 0.9,  rough: 0.25, opacity: 1,   wire: false, emissive: '#000', emInt: 0,   flat: false, makeU: uThick,    makeX: xThick },
 ]
 
 // ═══════════════════════════════════════════
@@ -257,6 +248,7 @@ function Scene() {
     transparent: v.opacity < 1, opacity: Math.min(v.opacity, baseOpacity * 15),
     wireframe: v.wire, side: THREE.DoubleSide,
     emissive: new THREE.Color(v.emissive), emissiveIntensity: v.emInt,
+    flatShading: v.flat, // ファセット面 → コンクリート/石材の質感
   }), [v, baseOpacity])
 
   const dummy = useMemo(() => new THREE.Object3D(), [])
