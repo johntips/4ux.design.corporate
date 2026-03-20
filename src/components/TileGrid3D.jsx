@@ -190,8 +190,8 @@ export const VARIANTS_3D = [
   { name: 'Paper',      depth: 0.005,bevel: 0,    color: '#f8f8f8', metal: 0,   rough: 1,    opacity: 0.9, wire: false, emissive: '#000', emInt: 0,   makeU: uSquare,   makeX: xStandard },
   // 48: Gold — 太い + 金属光沢ゴールド
   { name: 'Gold',       depth: 0.2,  bevel: 0.03, color: '#d4a843', metal: 1.0, rough: 0.2,  opacity: 1,   wire: false, emissive: '#000', emInt: 0,   makeU: uThick,    makeX: xThick },
-  // 49: Ghost — 半透明 + 薄い + リング
-  { name: 'Ghost',      depth: 0.03, bevel: 0.01, color: '#eef',    metal: 0.1, rough: 0.1,  opacity: 0.2, wire: false, emissive: '#aaf', emInt: 0.3, makeU: uRing,     makeX: xThin },
+  // 49: Silver — Gold と同じ形状、シルバー光沢
+  { name: 'Silver',     depth: 0.2,  bevel: 0.03, color: '#d0d0d8', metal: 1.0, rough: 0.15, opacity: 1,   wire: false, emissive: '#000', emInt: 0,   makeU: uThick,    makeX: xThick },
 ]
 
 // ═══════════════════════════════════════════
