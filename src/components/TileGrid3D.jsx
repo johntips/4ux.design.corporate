@@ -42,25 +42,28 @@ export const VARIANTS_3D = [
   { name: 'Minimal 3D', depth: 0.008, bevel: 0,   color: '#ccc',    metal: 0.2, rough: 0.5,  opacity: 1,   wire: false, emissive: '#000', emInt: 0 },
 ]
 
-// ── U字型 Shape (深いU — 両脚 + 半円底) ──
+// ── U字型 Shape (両脚 + 半円底、hole でくり抜き) ──
 function makeUShape() {
+  const ow = 0.42, iw = 0.24  // 外・内の半径
+  const legH = 0.35             // 脚の高さ (深めの U)
+
+  // 外側輪郭
   const shape = new THREE.Shape()
-  const ow = 0.42, iw = 0.26  // 外幅、内幅
-  const legH = 0.3              // 脚の高さ
-  const r = ow                  // 底の半円半径
+  shape.moveTo(-ow, legH)       // 左脚上端
+  shape.lineTo(-ow, 0)          // 左脚下端
+  shape.absarc(0, 0, ow, Math.PI, 0, true) // 底の外弧 (時計回り)
+  shape.lineTo(ow, legH)        // 右脚上端
+  shape.closePath()              // 上辺を閉じる
 
-  // 外側: 左脚上→左脚下→半円底→右脚下→右脚上
-  shape.moveTo(-ow, legH)
-  shape.lineTo(-ow, 0)
-  shape.absarc(0, 0, ow, Math.PI, 0, true) // 底の外弧
-  shape.lineTo(ow, legH)
+  // 内側くり抜き (hole)
+  const hole = new THREE.Path()
+  hole.moveTo(iw, legH)         // 右脚内上端 (逆回りで定義)
+  hole.lineTo(iw, 0)            // 右脚内下端
+  hole.absarc(0, 0, iw, 0, Math.PI, false) // 底の内弧 (反時計回り)
+  hole.lineTo(-iw, legH)        // 左脚内上端
+  hole.closePath()
 
-  // 内側: 右脚上→右脚下→半円底→左脚下→左脚上
-  shape.lineTo(iw, legH)
-  shape.lineTo(iw, 0)
-  shape.absarc(0, 0, iw, 0, Math.PI, false) // 底の内弧
-  shape.lineTo(-iw, legH)
-  shape.closePath()
+  shape.holes.push(hole)
   return shape
 }
 
