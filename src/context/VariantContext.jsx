@@ -9,7 +9,7 @@ import { useHaptics } from '../hooks/useHaptics'
 
 const VariantContext = createContext(null)
 
-export const VARIANT_COUNT = 30
+export const VARIANT_COUNT = 40  // 0-29: SVG, 30-39: WebGL 3D
 
 const DEFAULT_PARAMS = {
   variant: 0,

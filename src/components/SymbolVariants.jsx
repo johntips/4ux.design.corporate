@@ -348,6 +348,14 @@ const variants = [
       <rect x="10" y="10" width="28" height="28" stroke={c} strokeWidth={s * 0.12} fill="none" />
       <circle cx="24" cy="24" r="1.5" fill={c} />
     </>) },
+  // ════════ 30-39: WebGL 3D (TileGrid3D で描画) ════════
+  // SVG は使わないが、name と fallback 用の U/X を定義
+  ...['Glass', 'Chrome', 'Wireframe', 'Neon 3D', 'Matte', 'Holo', 'Voxel', 'Clay', 'Deep', 'Minimal 3D']
+    .map(name => ({
+      name: `3D: ${name}`,
+      U: (c, s) => <path d={lPath(90)} stroke={c} strokeWidth={s} strokeLinecap="butt" fill="none" />,
+      X: (c, s) => xh(c, s * 0.75, 5, s * 0.35),
+    })),
 ]
 
 export default variants

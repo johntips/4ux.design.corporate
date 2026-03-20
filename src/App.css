@@ -1,3 +1,31 @@
+/* ── Grid layer crossfade ── */
+.grid-layer {
+  transition: opacity 0.6s ease;
+}
+
+.grid-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.grid-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── 3D Canvas ── */
+.tile-grid-3d {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.tile-grid-3d canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
 /* ── Tile Grid (interactive background) ── */
 .tile-grid {
   position: fixed;
