@@ -350,7 +350,8 @@ const variants = [
     </>) },
   // ════════ 30-39: WebGL 3D (TileGrid3D で描画) ════════
   // SVG は使わないが、name と fallback 用の U/X を定義
-  ...['Glass', 'Chrome', 'Wireframe', 'Neon 3D', 'Matte', 'Holo', 'Voxel', 'Clay', 'Deep', 'Minimal 3D']
+  ...['Glass', 'Chrome', 'Wireframe', 'Neon 3D', 'Matte', 'Holo', 'Voxel', 'Clay', 'Deep', 'Minimal 3D',
+      'Cyber', 'Brutalist', 'Hairline3D', 'Gothic', 'Porcelain', 'Neon Wire', 'Monolith', 'Paper', 'Gold', 'Ghost']
     .map(name => ({
       name: `3D: ${name}`,
       U: (c, s) => <path d={lPath(90)} stroke={c} strokeWidth={s} strokeLinecap="butt" fill="none" />,
