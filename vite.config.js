@@ -5,4 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: '/4ux.design.corporate/',
+  resolve: {
+    dedupe: ['react', 'react-dom', 'three'],
+  },
 })
