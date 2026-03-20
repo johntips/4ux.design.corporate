@@ -42,28 +42,24 @@ export const VARIANTS_3D = [
   { name: 'Minimal 3D', depth: 0.008, bevel: 0,   color: '#ccc',    metal: 0.2, rough: 0.5,  opacity: 1,   wire: false, emissive: '#000', emInt: 0 },
 ]
 
-// ── U字型 Shape (両脚 + 半円底、hole でくり抜き) ──
+// ── U字型 Shape (単一連続パスで厚みのあるU字断面を描く) ──
 function makeUShape() {
-  const ow = 0.42, iw = 0.24  // 外・内の半径
-  const legH = 0.35             // 脚の高さ (深めの U)
+  const ow = 0.42, iw = 0.22  // 外・内の半径
+  const legH = 0.4              // 脚の高さ
 
-  // 外側輪郭
+  // 1つのパスで外側→内側を連続的にトレース
   const shape = new THREE.Shape()
-  shape.moveTo(-ow, legH)       // 左脚上端
-  shape.lineTo(-ow, 0)          // 左脚下端
-  shape.absarc(0, 0, ow, Math.PI, 0, true) // 底の外弧 (時計回り)
-  shape.lineTo(ow, legH)        // 右脚上端
-  shape.closePath()              // 上辺を閉じる
-
-  // 内側くり抜き (hole)
-  const hole = new THREE.Path()
-  hole.moveTo(iw, legH)         // 右脚内上端 (逆回りで定義)
-  hole.lineTo(iw, 0)            // 右脚内下端
-  hole.absarc(0, 0, iw, 0, Math.PI, false) // 底の内弧 (反時計回り)
-  hole.lineTo(-iw, legH)        // 左脚内上端
-  hole.closePath()
-
-  shape.holes.push(hole)
+  // 外側: 左上→左下→底弧(右へ)→右上
+  shape.moveTo(-ow, legH)
+  shape.lineTo(-ow, 0)
+  shape.absarc(0, 0, ow, Math.PI, 0, true) // 外弧 CW (底を通る)
+  shape.lineTo(ow, legH)
+  // 折り返して内側: 右上→右下→底弧(左へ)→左上
+  shape.lineTo(iw, legH)
+  shape.lineTo(iw, 0)
+  shape.absarc(0, 0, iw, 0, Math.PI, true) // 内弧 CW (底を通って戻る)
+  shape.lineTo(-iw, legH)
+  shape.closePath()
   return shape
 }
 
