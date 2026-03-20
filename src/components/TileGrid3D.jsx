@@ -182,7 +182,7 @@ export const VARIANTS_3D = [
   { name: 'Monolith',   depth: 0.4,  bevel: 0,    color: '#6a6a6a', metal: 0.1,  rough: 0.95, opacity: 1,   wire: false, emissive: '#000', emInt: 0,   flat: true,  makeU: uRing,     makeX: xDiamond },
   { name: 'Paper',      depth: 0.005,bevel: 0,    color: '#d0d0d0', metal: 0,    rough: 1,    opacity: 0.85,wire: false, emissive: '#000', emInt: 0,   flat: false, makeU: uSquare,   makeX: xStandard },
   { name: 'Gold',       depth: 0.2,  bevel: 0.02, color: '#b8973a', metal: 0.9,  rough: 0.3,  opacity: 1,   wire: false, emissive: '#000', emInt: 0,   flat: false, makeU: uThick,    makeX: xThick },
-  { name: 'Silver',     depth: 0.2,  bevel: 0.02, color: '#b0b0b8', metal: 0.9,  rough: 0.25, opacity: 1,   wire: false, emissive: '#000', emInt: 0,   flat: false, makeU: uThick,    makeX: xThick },
+  { name: 'Silver',     depth: 0.2,  bevel: 0.02, color: '#e0e0e8', metal: 1.0,  rough: 0.1,  opacity: 1,   wire: false, emissive: '#dde', emInt: 0.15, flat: false, makeU: uThick,    makeX: xThick },
 ]
 
 // ═══════════════════════════════════════════
