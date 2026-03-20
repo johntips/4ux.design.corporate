@@ -16,7 +16,7 @@ import { useDesignParams } from '../context/VariantContext'
 import { useSmoothMouse } from '../hooks/useMouse'
 
 const PX = 100
-const RADIUS = 200
+const RADIUS = 800
 
 // ── 10 バリエーション (差別化を強めた) ──
 export const VARIANTS_3D = [
