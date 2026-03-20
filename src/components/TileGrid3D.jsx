@@ -56,8 +56,6 @@ function Scene() {
   const groupRef = useRef()
   const uMeshRef = useRef()
   const xMeshRef = useRef()
-  const needsUpdate = useRef(true)
-
   const varIdx = variant - 30
   const v = VARIANTS_3D[varIdx] || VARIANTS_3D[0]
   const cellSize = Math.max(tileSize + tileGap, 4)
@@ -79,7 +77,6 @@ function Scene() {
         else uPos.push({ x: px, y: py, rot })
       }
     }
-    needsUpdate.current = true
     return { uPositions: uPos, xPositions: xPos }
   }, [cellSize])
 
@@ -105,12 +102,16 @@ function Scene() {
 
   const dummy = useMemo(() => new THREE.Object3D(), [])
 
-  // useFrame 内でマトリクス設定（ref 確実に存在する）
+  // variant, scale, depth が変わったら再設定が必要
+  const updateKey = `${varIdx}-${scale}-${v.depth}-${cellSize}`
+  const lastKey = useRef('')
+
   useFrame(() => {
     if (!groupRef.current) return
 
-    // マトリクス初期化（1回だけ）
-    if (needsUpdate.current) {
+    // key が変わったら or 初回 → マトリクス再設定
+    const dirty = updateKey !== lastKey.current
+    if (dirty) {
       if (uMeshRef.current && uPositions.length > 0) {
         uPositions.forEach((p, i) => {
           dummy.position.set(p.x, p.y, 0)
@@ -131,7 +132,7 @@ function Scene() {
         })
         xMeshRef.current.instanceMatrix.needsUpdate = true
       }
-      needsUpdate.current = false
+      lastKey.current = updateKey
     }
 
     // マウス追従
@@ -144,10 +145,10 @@ function Scene() {
   return (
     <group ref={groupRef}>
       {uPositions.length > 0 && (
-        <instancedMesh ref={uMeshRef} args={[uGeo, mat, uPositions.length]} />
+        <instancedMesh key={`u-${updateKey}`} ref={uMeshRef} args={[uGeo, mat, uPositions.length]} />
       )}
       {xPositions.length > 0 && (
-        <instancedMesh ref={xMeshRef} args={[xGeo, mat, xPositions.length]} />
+        <instancedMesh key={`x-${updateKey}`} ref={xMeshRef} args={[xGeo, mat, xPositions.length]} />
       )}
     </group>
   )
