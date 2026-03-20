@@ -1,9 +1,9 @@
 /**
- * TileGrid3D.jsx — Three.js WebGL タイルグリッド
+ * TileGrid3D.jsx — Three.js タイルグリッド
  *
- * OrthographicCamera でピクセル座標系に合わせる。
- * 1 Three.js unit = 1px (÷PX_SCALE で縮小)
- * SVG グリッドと同じ配置ロジック。
+ * U = ランドルト環 (ドーナツ弧 with gap at top) — SVG版と同じ形状
+ * X = 十字
+ * マウス近接で個別タイルが3D方向に回転
  */
 import { useMemo, useRef } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
@@ -11,8 +11,8 @@ import * as THREE from 'three'
 import { useDesignParams } from '../context/VariantContext'
 import { useSmoothMouse } from '../hooks/useMouse'
 
-// 1px = 1/PX unit にスケール（数値を扱いやすくする）
 const PX = 100
+const RADIUS = 200 // マウス影響範囲 (px)
 
 export const VARIANTS_3D = [
   { name: 'Glass',      depth: 0.08, color: '#e8e8e8', metal: 0.1, rough: 0.05, opacity: 0.35, wire: false, emissive: '#000' },
@@ -27,23 +27,24 @@ export const VARIANTS_3D = [
   { name: 'Minimal 3D', depth: 0.02, color: '#ccc',    metal: 0.3, rough: 0.5,  opacity: 1,    wire: false, emissive: '#000' },
 ]
 
-// ── U 字 Shape (半径0.5の単位円ベース → scale で tileSize に合わせる) ──
+// ── U: ランドルト環 (厚みのある円弧、上に切れ目) ──
 function makeUShape() {
-  const s = new THREE.Shape()
-  const o = 0.42, n = 0.28
-  s.moveTo(-o, 0.35)
-  s.lineTo(-o, 0)
-  s.absarc(0, 0, o, Math.PI, 0, true)
-  s.lineTo(o, 0.35)
-  s.lineTo(n, 0.35)
-  s.lineTo(n, 0)
-  s.absarc(0, 0, n, 0, Math.PI, false)
-  s.lineTo(-n, 0.35)
-  s.closePath()
-  return s
+  const shape = new THREE.Shape()
+  const outerR = 0.42, innerR = 0.26
+  const gapAngle = Math.PI / 2 // 90° gap
+  const gapCenter = Math.PI / 2 // top
+  const start = gapCenter + gapAngle / 2 // 3PI/4 = gap の左端
+  const end = gapCenter - gapAngle / 2   // PI/4  = gap の右端
+
+  // 外弧: start → end (時計回り = gap を避けて下を通る)
+  shape.absarc(0, 0, outerR, start, end, true)
+  // 内弧: end → start (反時計回り = 戻る)
+  shape.absarc(0, 0, innerR, end, start, false)
+  shape.closePath()
+  return shape
 }
 
-// ── X 字 Shape ──
+// ── X: 十字 ──
 function makeXShape() {
   const s = new THREE.Shape()
   const a = 0.42, b = 0.1
@@ -58,39 +59,42 @@ function makeXShape() {
 function Scene() {
   const { tileSize, tileGap, opacity: baseOpacity, variant } = useDesignParams()
   const mouse = useSmoothMouse(0.1)
-  const groupRef = useRef()
   const uRef = useRef()
   const xRef = useRef()
 
   const varIdx = variant - 30
   const v = VARIANTS_3D[varIdx] || VARIANTS_3D[0]
   const cellSize = Math.max(tileSize + tileGap, 4)
+  const symScale = (tileSize / PX) * 0.5
 
-  // タイル配置 (ピクセル座標 → Three.js 単位)
-  const { uPos, xPos } = useMemo(() => {
+  // タイル配置
+  const tiles = useMemo(() => {
     const w = window.innerWidth, h = window.innerHeight
     const cols = Math.min(Math.ceil(w / cellSize) + 2, 30)
     const rows = Math.min(Math.ceil(h / cellSize) + 2, 20)
-    const total = Math.min(cols * rows, 600)
-    const u = [], x = []
-    // グリッドの中心をスクリーン中心に合わせる
+    const arr = []
     const ox = -(cols * cellSize) / 2
     const oy = -(rows * cellSize) / 2
-    let count = 0
-    for (let row = 0; row < rows && count < total; row++) {
-      for (let col = 0; col < cols && count < total; col++) {
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        if (arr.length >= 600) break
         const idx = (col + row) % 4
-        // ピクセル座標 → Three.js 単位 (y は反転)
-        const px = (ox + col * cellSize + cellSize / 2) / PX
-        const py = -(oy + row * cellSize + cellSize / 2) / PX
-        const rot = idx === 3 ? Math.PI / 4 : (idx * Math.PI) / 2
-        if (idx === 3) x.push({ x: px, y: py, rot })
-        else u.push({ x: px, y: py, rot })
-        count++
+        arr.push({
+          px: (ox + col * cellSize + cellSize / 2) / PX,
+          py: -(oy + row * cellSize + cellSize / 2) / PX,
+          // ピクセル座標 (マウス距離計算用)
+          screenX: w / 2 + ox + col * cellSize + cellSize / 2,
+          screenY: h / 2 + oy + row * cellSize + cellSize / 2,
+          baseRot: idx === 3 ? Math.PI / 4 : (idx * Math.PI) / 2,
+          isX: idx === 3,
+        })
       }
     }
-    return { uPos: u, xPos: x }
+    return arr
   }, [cellSize])
+
+  const uTiles = useMemo(() => tiles.filter(t => !t.isX), [tiles])
+  const xTiles = useMemo(() => tiles.filter(t => t.isX), [tiles])
 
   const uGeo = useMemo(() =>
     new THREE.ExtrudeGeometry(makeUShape(), { depth: v.depth, bevelEnabled: false }), [v.depth])
@@ -105,71 +109,91 @@ function Scene() {
     emissiveIntensity: v.emissive === '#000' ? 0 : 0.5,
   }), [v, baseOpacity])
 
-  // シンボルのスケール: tileSize px → tileSize/PX Three.js 単位
-  // Shape は -0.42~0.42 = 幅0.84 なので、tileSize/PX / 0.84 * 0.4 で収まるサイズに
-  const symScale = (tileSize / PX) * 0.5
   const dummy = useMemo(() => new THREE.Object3D(), [])
-  const updateKey = `${varIdx}-${symScale}-${v.depth}-${cellSize}`
-  const lastKey = useRef('')
 
+  // 毎フレーム: マウス近接タイルを3D回転
   useFrame(() => {
-    if (!groupRef.current) return
+    const mx = mouse.current.x
+    const my = mouse.current.y
 
-    if (updateKey !== lastKey.current) {
-      if (uRef.current && uPos.length > 0) {
-        uPos.forEach((p, i) => {
-          dummy.position.set(p.x, p.y, 0)
-          dummy.rotation.set(0, 0, p.rot)
-          dummy.scale.setScalar(symScale)
-          dummy.updateMatrix()
-          uRef.current.setMatrixAt(i, dummy.matrix)
-        })
-        uRef.current.instanceMatrix.needsUpdate = true
-      }
-      if (xRef.current && xPos.length > 0) {
-        xPos.forEach((p, i) => {
-          dummy.position.set(p.x, p.y, 0)
-          dummy.rotation.set(0, 0, p.rot)
-          dummy.scale.setScalar(symScale)
-          dummy.updateMatrix()
-          xRef.current.setMatrixAt(i, dummy.matrix)
-        })
-        xRef.current.instanceMatrix.needsUpdate = true
-      }
-      lastKey.current = updateKey
+    // U instances
+    if (uRef.current) {
+      uTiles.forEach((t, i) => {
+        const dx = mx - t.screenX
+        const dy = my - t.screenY
+        const dist = Math.sqrt(dx * dx + dy * dy)
+
+        dummy.position.set(t.px, t.py, 0)
+        dummy.scale.setScalar(symScale)
+
+        if (dist < RADIUS) {
+          const influence = 1 - dist / RADIUS
+          const angleToMouse = Math.atan2(dy, dx)
+          // マウス方向に3D回転
+          dummy.rotation.set(
+            -Math.sin(angleToMouse) * influence * 0.8, // X軸
+            Math.cos(angleToMouse) * influence * 0.8,   // Y軸
+            t.baseRot + angleToMouse * influence * 0.3,  // Z軸 (平面回転)
+          )
+        } else {
+          dummy.rotation.set(0, 0, t.baseRot)
+        }
+
+        dummy.updateMatrix()
+        uRef.current.setMatrixAt(i, dummy.matrix)
+      })
+      uRef.current.instanceMatrix.needsUpdate = true
     }
 
-    // マウス追従で微回転
-    const mx = (mouse.current.x / window.innerWidth - 0.5) * 2
-    const my = (mouse.current.y / window.innerHeight - 0.5) * 2
-    groupRef.current.rotation.y += (mx * 0.1 - groupRef.current.rotation.y) * 0.04
-    groupRef.current.rotation.x += (-my * 0.1 - groupRef.current.rotation.x) * 0.04
+    // X instances
+    if (xRef.current) {
+      xTiles.forEach((t, i) => {
+        const dx = mx - t.screenX
+        const dy = my - t.screenY
+        const dist = Math.sqrt(dx * dx + dy * dy)
+
+        dummy.position.set(t.px, t.py, 0)
+        dummy.scale.setScalar(symScale)
+
+        if (dist < RADIUS) {
+          const influence = 1 - dist / RADIUS
+          const angleToMouse = Math.atan2(dy, dx)
+          dummy.rotation.set(
+            -Math.sin(angleToMouse) * influence * 0.8,
+            Math.cos(angleToMouse) * influence * 0.8,
+            t.baseRot + angleToMouse * influence * 0.3,
+          )
+        } else {
+          dummy.rotation.set(0, 0, t.baseRot)
+        }
+
+        dummy.updateMatrix()
+        xRef.current.setMatrixAt(i, dummy.matrix)
+      })
+      xRef.current.instanceMatrix.needsUpdate = true
+    }
   })
 
   return (
-    <group ref={groupRef}>
-      {uPos.length > 0 && (
-        <instancedMesh key={`u-${updateKey}`} ref={uRef} args={[uGeo, mat, uPos.length]} />
+    <>
+      {uTiles.length > 0 && (
+        <instancedMesh ref={uRef} args={[uGeo, mat, uTiles.length]} />
       )}
-      {xPos.length > 0 && (
-        <instancedMesh key={`x-${updateKey}`} ref={xRef} args={[xGeo, mat, xPos.length]} />
+      {xTiles.length > 0 && (
+        <instancedMesh ref={xRef} args={[xGeo, mat, xTiles.length]} />
       )}
-    </group>
+    </>
   )
 }
 
-// ── OrthographicCamera でピクセル座標に近いビューを作る ──
-function OrthoCamera() {
+function OrthoSetup() {
   const { camera } = useThree()
   const w = window.innerWidth / PX / 2
   const h = window.innerHeight / PX / 2
   useMemo(() => {
-    camera.left = -w
-    camera.right = w
-    camera.top = h
-    camera.bottom = -h
-    camera.near = -100
-    camera.far = 100
+    camera.left = -w; camera.right = w
+    camera.top = h; camera.bottom = -h
+    camera.near = -100; camera.far = 100
     camera.position.set(0, 0, 10)
     camera.updateProjectionMatrix()
   }, [camera, w, h])
@@ -187,7 +211,7 @@ export default function TileGrid3D() {
         style={{ background: 'transparent' }}
         onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
       >
-        <OrthoCamera />
+        <OrthoSetup />
         <ambientLight intensity={0.7} />
         <directionalLight position={[3, 4, 5]} intensity={0.9} />
         <directionalLight position={[-2, -1, 3]} intensity={0.3} />
