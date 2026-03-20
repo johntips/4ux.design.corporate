@@ -1,16 +1,14 @@
 /**
  * TileGrid3D.jsx — 軽量 Three.js WebGL タイルグリッド
  *
- * パターン 30-39。InstancedMesh で高速描画。
- * Environment HDR は使わず、ライトのみでシンプルに。
+ * パターン 30-39。InstancedMesh × useEffect で確実にマトリクス設定。
  */
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useDesignParams } from '../context/VariantContext'
 import { useSmoothMouse } from '../hooks/useMouse'
 
-// ── 3D バリエーション定義 ──
 export const VARIANTS_3D = [
   { name: 'Glass',      depth: 0.15, color: '#e8e8e8', metal: 0.1, rough: 0.05, opacity: 0.5, wire: false, emissive: '#000' },
   { name: 'Chrome',     depth: 0.2,  color: '#ccc',    metal: 1.0, rough: 0.1,  opacity: 1,   wire: false, emissive: '#000' },
@@ -27,91 +25,72 @@ export const VARIANTS_3D = [
 // ── U 字 Shape ──
 function makeUShape() {
   const s = new THREE.Shape()
-  const outer = 0.5, inner = 0.35, legH = 0.3
-  // 外側 U
-  s.moveTo(-outer, legH)
+  const outer = 0.5, inner = 0.35
+  s.moveTo(-outer, 0.4)
   s.lineTo(-outer, 0)
   s.absarc(0, 0, outer, Math.PI, 0, true)
-  s.lineTo(outer, legH)
-  // 内側 U (くり抜き)
-  s.lineTo(inner, legH)
+  s.lineTo(outer, 0.4)
+  s.lineTo(inner, 0.4)
   s.lineTo(inner, 0)
   s.absarc(0, 0, inner, 0, Math.PI, false)
-  s.lineTo(-inner, legH)
+  s.lineTo(-inner, 0.4)
   s.closePath()
   return s
 }
 
-// ── X 字 Shape (十字) ──
+// ── X 字 Shape ──
 function makeXShape() {
   const s = new THREE.Shape()
   const a = 0.5, b = 0.12
-  // 十字を1つの Shape で描く
-  s.moveTo(-b, -a)
-  s.lineTo(b, -a)
-  s.lineTo(b, -b)
-  s.lineTo(a, -b)
-  s.lineTo(a, b)
-  s.lineTo(b, b)
-  s.lineTo(b, a)
-  s.lineTo(-b, a)
-  s.lineTo(-b, b)
-  s.lineTo(-a, b)
-  s.lineTo(-a, -b)
-  s.lineTo(-b, -b)
+  s.moveTo(-b, -a); s.lineTo(b, -a); s.lineTo(b, -b)
+  s.lineTo(a, -b); s.lineTo(a, b); s.lineTo(b, b)
+  s.lineTo(b, a); s.lineTo(-b, a); s.lineTo(-b, b)
+  s.lineTo(-a, b); s.lineTo(-a, -b); s.lineTo(-b, -b)
   s.closePath()
   return s
 }
 
-// ── InstancedMesh で描画するシーン ──
 function Scene() {
   const { tileSize, tileGap, opacity: baseOpacity, variant } = useDesignParams()
   const mouse = useSmoothMouse(0.1)
   const groupRef = useRef()
   const uMeshRef = useRef()
   const xMeshRef = useRef()
+  const needsUpdate = useRef(true)
 
   const varIdx = variant - 30
   const v = VARIANTS_3D[varIdx] || VARIANTS_3D[0]
   const cellSize = Math.max(tileSize + tileGap, 4)
+  const scale = tileSize / 130
 
-  // タイル配置
-  const { uPositions, xPositions, cols, rows } = useMemo(() => {
+  const { uPositions, xPositions } = useMemo(() => {
     const c = Math.min(Math.ceil(window.innerWidth / cellSize) + 2, 30)
     const r = Math.min(Math.ceil(window.innerHeight / cellSize) + 2, 20)
     const uPos = [], xPos = []
-    const ox = -(c * cellSize) / 200  // Three.js 単位に変換 (/100)
+    const ox = -(c * cellSize) / 200
     const oy = -(r * cellSize) / 200
-
     for (let row = 0; row < r; row++) {
       for (let col = 0; col < c; col++) {
         const idx = (col + row) % 4
         const px = ox + (col * cellSize) / 100 + cellSize / 200
         const py = -(oy + (row * cellSize) / 100 + cellSize / 200)
         const rot = idx === 3 ? Math.PI / 4 : (idx * Math.PI) / 2
-
-        if (idx === 3) {
-          xPos.push({ x: px, y: py, rot })
-        } else {
-          uPos.push({ x: px, y: py, rot })
-        }
+        if (idx === 3) xPos.push({ x: px, y: py, rot })
+        else uPos.push({ x: px, y: py, rot })
       }
     }
-    return { uPositions: uPos, xPositions: xPos, cols: c, rows: r }
+    needsUpdate.current = true
+    return { uPositions: uPos, xPositions: xPos }
   }, [cellSize])
 
-  // Geometry (メモ化)
   const uGeo = useMemo(() => {
-    const shape = makeUShape()
-    return new THREE.ExtrudeGeometry(shape, { depth: v.depth, bevelEnabled: false })
+    return new THREE.ExtrudeGeometry(makeUShape(), { depth: v.depth, bevelEnabled: false })
   }, [v.depth])
 
   const xGeo = useMemo(() => {
-    const shape = makeXShape()
-    return new THREE.ExtrudeGeometry(shape, { depth: v.depth, bevelEnabled: false })
+    return new THREE.ExtrudeGeometry(makeXShape(), { depth: v.depth, bevelEnabled: false })
   }, [v.depth])
 
-  // Material
   const mat = useMemo(() => new THREE.MeshStandardMaterial({
     color: v.color,
     metalness: v.metal,
@@ -124,38 +103,38 @@ function Scene() {
     side: THREE.DoubleSide,
   }), [v, baseOpacity])
 
-  // InstancedMesh のマトリクスを設定
-  const scale = tileSize / 130
   const dummy = useMemo(() => new THREE.Object3D(), [])
 
-  // U instances
-  useMemo(() => {
-    if (!uMeshRef.current) return
-    uPositions.forEach((p, i) => {
-      dummy.position.set(p.x, p.y, 0)
-      dummy.rotation.set(0, 0, p.rot)
-      dummy.scale.setScalar(scale)
-      dummy.updateMatrix()
-      uMeshRef.current.setMatrixAt(i, dummy.matrix)
-    })
-    uMeshRef.current.instanceMatrix.needsUpdate = true
-  }, [uPositions, scale, dummy])
-
-  useMemo(() => {
-    if (!xMeshRef.current) return
-    xPositions.forEach((p, i) => {
-      dummy.position.set(p.x, p.y, 0)
-      dummy.rotation.set(0, 0, p.rot)
-      dummy.scale.setScalar(scale)
-      dummy.updateMatrix()
-      xMeshRef.current.setMatrixAt(i, dummy.matrix)
-    })
-    xMeshRef.current.instanceMatrix.needsUpdate = true
-  }, [xPositions, scale, dummy])
-
-  // マウス追従でグループ微回転
+  // useFrame 内でマトリクス設定（ref 確実に存在する）
   useFrame(() => {
     if (!groupRef.current) return
+
+    // マトリクス初期化（1回だけ）
+    if (needsUpdate.current) {
+      if (uMeshRef.current && uPositions.length > 0) {
+        uPositions.forEach((p, i) => {
+          dummy.position.set(p.x, p.y, 0)
+          dummy.rotation.set(0, 0, p.rot)
+          dummy.scale.setScalar(scale)
+          dummy.updateMatrix()
+          uMeshRef.current.setMatrixAt(i, dummy.matrix)
+        })
+        uMeshRef.current.instanceMatrix.needsUpdate = true
+      }
+      if (xMeshRef.current && xPositions.length > 0) {
+        xPositions.forEach((p, i) => {
+          dummy.position.set(p.x, p.y, 0)
+          dummy.rotation.set(0, 0, p.rot)
+          dummy.scale.setScalar(scale)
+          dummy.updateMatrix()
+          xMeshRef.current.setMatrixAt(i, dummy.matrix)
+        })
+        xMeshRef.current.instanceMatrix.needsUpdate = true
+      }
+      needsUpdate.current = false
+    }
+
+    // マウス追従
     const mx = (mouse.current.x / window.innerWidth - 0.5) * 2
     const my = (mouse.current.y / window.innerHeight - 0.5) * 2
     groupRef.current.rotation.y += (mx * 0.12 - groupRef.current.rotation.y) * 0.04
@@ -174,23 +153,15 @@ function Scene() {
   )
 }
 
-// ── メインキャンバス ──
 export default function TileGrid3D() {
   return (
     <div className="tile-grid-3d">
       <Canvas
         camera={{ position: [0, 0, 10], fov: 50 }}
-        gl={{
-          antialias: true,
-          alpha: true,
-          powerPreference: 'default',
-          failIfMajorPerformanceCaveat: false,
-        }}
+        gl={{ antialias: true, alpha: true, powerPreference: 'default' }}
         dpr={[1, 1.5]}
         style={{ background: 'transparent' }}
-        onCreated={({ gl }) => {
-          gl.setClearColor(0x000000, 0)
-        }}
+        onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
       >
         <ambientLight intensity={0.7} />
         <directionalLight position={[5, 5, 5]} intensity={0.9} />
