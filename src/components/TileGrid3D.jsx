@@ -42,23 +42,31 @@ export const VARIANTS_3D = [
   { name: 'Minimal 3D', depth: 0.008, bevel: 0,   color: '#ccc',    metal: 0.2, rough: 0.5,  opacity: 1,   wire: false, emissive: '#000', emInt: 0 },
 ]
 
-// ── U字型 Shape (単一連続パスで厚みのあるU字断面を描く) ──
+// ── U字型 Shape (直線 + 曲線で確実にU字を構築) ──
+//
+//   |         |   ← 脚 (legH)
+//   |         |
+//    ╲_______╱    ← 丸底 (quadraticCurve)
+//
 function makeUShape() {
-  const ow = 0.42, iw = 0.22  // 外・内の半径
-  const legH = 0.4              // 脚の高さ
+  const ow = 0.42, iw = 0.22  // 外・内幅
+  const legH = 0.4             // 脚高さ
+  const bot = -0.42            // 底の最深点 Y
+  const iBot = -0.22           // 内底の最深点 Y
 
-  // 1つのパスで外側→内側を連続的にトレース
   const shape = new THREE.Shape()
-  // 外側: 左上→左下→底弧(右へ)→右上
-  shape.moveTo(-ow, legH)
-  shape.lineTo(-ow, 0)
-  shape.absarc(0, 0, ow, Math.PI, 0, true) // 外弧 CW (底を通る)
-  shape.lineTo(ow, legH)
-  // 折り返して内側: 右上→右下→底弧(左へ)→左上
-  shape.lineTo(iw, legH)
-  shape.lineTo(iw, 0)
-  shape.absarc(0, 0, iw, 0, Math.PI, true) // 内弧 CW (底を通って戻る)
-  shape.lineTo(-iw, legH)
+  // 外側 (左上 → 時計回り)
+  shape.moveTo(-ow, legH)              // 左脚上
+  shape.lineTo(-ow, 0)                 // 左脚下
+  shape.quadraticCurveTo(-ow, bot, 0, bot) // 左→底カーブ
+  shape.quadraticCurveTo(ow, bot, ow, 0)   // 底→右カーブ
+  shape.lineTo(ow, legH)               // 右脚上
+  // 内側 (右上 → 反時計回り = 折り返し)
+  shape.lineTo(iw, legH)               // 内右脚上
+  shape.lineTo(iw, 0)                  // 内右脚下
+  shape.quadraticCurveTo(iw, iBot, 0, iBot) // 内右→底
+  shape.quadraticCurveTo(-iw, iBot, -iw, 0) // 内底→左
+  shape.lineTo(-iw, legH)              // 内左脚上
   shape.closePath()
   return shape
 }
