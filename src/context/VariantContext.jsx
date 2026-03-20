@@ -20,6 +20,7 @@ const DEFAULT_PARAMS = {
   rotX: 0,       // X軸回転 (-60 ~ 60)
   rotY: 0,       // Y軸回転 (-60 ~ 60)
   perspective: 0, // 遠近感 (0=なし, 200~2000)
+  extrude: 0,    // 3D押し出し深度 (0~20)
 }
 
 export function VariantProvider({ children }) {

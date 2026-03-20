@@ -14,7 +14,7 @@ import variants from './SymbolVariants'
 export default function Controller() {
   const {
     variant, tileSize, tileGap, strokeW, opacity,
-    rotX, rotY, perspective,
+    rotX, rotY, perspective, extrude,
     setParam, nextVariant, prevVariant,
   } = useDesignParams()
   const haptics = useHaptics()
@@ -88,6 +88,8 @@ export default function Controller() {
           display={`${rotY}°`} onChange={(v) => setParam('rotY', v)} haptics={haptics} />
         <Fader label="PRSP" value={perspective} min={0} max={2000} step={50}
           display={perspective === 0 ? 'OFF' : `${perspective}`} onChange={(v) => setParam('perspective', v)} haptics={haptics} />
+        <Fader label="DPTH" value={extrude} min={0} max={20} step={0.5}
+          display={extrude === 0 ? 'OFF' : extrude.toFixed(1)} onChange={(v) => setParam('extrude', v)} haptics={haptics} />
 
         <div className="ctrl-footer">shift+f</div>
       </div>

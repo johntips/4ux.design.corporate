@@ -352,22 +352,61 @@ const variants = [
 
 export default variants
 
-export function VariantU({ color = '#1a1a1a', ...props }) {
-  const v = useVariant()
-  const { strokeW } = useDesignParams()
+/**
+ * 3D押し出しレンダリング
+ *
+ * extrude > 0 のとき、背面から前面へ N 枚のレイヤーを重ねて立体感を出す
+ * 各レイヤーは右下にオフセット + 段階的に明るくなる
+ * 最前面が元の色、最背面が薄い色 → 押し出しの側面に見える
+ */
+function ExtrudedSvg({ children, extrude, color, ...props }) {
+  if (!extrude || extrude <= 0) {
+    return (
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+        {children}
+      </svg>
+    )
+  }
+
+  // 押し出しレイヤー数 (depth に応じて 3~12 枚)
+  const layers = Math.min(Math.max(Math.round(extrude), 3), 12)
+  // 1レイヤーあたりのオフセット量
+  const step = extrude / layers
+
   return (
     <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      {variants[v]?.U(color, strokeW)}
+      {/* 背面レイヤー (薄い色 → 側面) */}
+      {Array.from({ length: layers }, (_, i) => {
+        const offset = (layers - i) * step
+        const alpha = 0.08 + (i / layers) * 0.15 // 0.08 → 0.23
+        return (
+          <g key={i} transform={`translate(${offset * 0.7}, ${offset})`} opacity={alpha}>
+            {children}
+          </g>
+        )
+      })}
+      {/* 最前面 (元の色) */}
+      {children}
     </svg>
+  )
+}
+
+export function VariantU({ color = '#1a1a1a', ...props }) {
+  const v = useVariant()
+  const { strokeW, extrude } = useDesignParams()
+  return (
+    <ExtrudedSvg extrude={extrude} color={color} {...props}>
+      {variants[v]?.U(color, strokeW)}
+    </ExtrudedSvg>
   )
 }
 
 export function VariantX({ color = '#1a1a1a', ...props }) {
   const v = useVariant()
-  const { strokeW } = useDesignParams()
+  const { strokeW, extrude } = useDesignParams()
   return (
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <ExtrudedSvg extrude={extrude} color={color} {...props}>
       {variants[v]?.X(color, strokeW)}
-    </svg>
+    </ExtrudedSvg>
   )
 }
