@@ -1,17 +1,8 @@
 /**
  * VariantContext — シンボルバリエーション + デザインパラメータ管理
  *
- * state:
- *   variant    — 0-9 のパターン番号
- *   tileSize   — タイルサイズ px (16-400)
- *   tileGap    — タイル間隔 px (-20 to 80) ※マイナス=重なる
- *   strokeW    — stroke 太さ (1-14)
- *   opacity    — タイル不透明度 (0.02-0.4)
- *
- * 操作:
- *   Shift+F  → variant 切り替え
- *   SP: ダブルタップ → variant 切り替え
- *   左下コントローラーで全パラメータ調整可
+ * 2D: tileSize, tileGap, strokeW, opacity
+ * 3D: rotX, rotY, perspective
  */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { useHaptics } from '../hooks/useHaptics'
@@ -26,6 +17,9 @@ const DEFAULT_PARAMS = {
   tileGap: -188,
   strokeW: 10,
   opacity: 0.06,
+  rotX: 0,       // X軸回転 (-60 ~ 60)
+  rotY: 0,       // Y軸回転 (-60 ~ 60)
+  perspective: 0, // 遠近感 (0=なし, 200~2000)
 }
 
 export function VariantProvider({ children }) {
@@ -37,10 +31,14 @@ export function VariantProvider({ children }) {
     haptics.nudge()
   }, [haptics])
 
+  const prevVariant = useCallback(() => {
+    setState((s) => ({ ...s, variant: (s.variant - 1 + VARIANT_COUNT) % VARIANT_COUNT }))
+    haptics.nudge()
+  }, [haptics])
+
   const setParam = useCallback((key, value) => {
     setState((s) => {
       const next = { ...s, [key]: value }
-      // SIZE 変更時、GAP が新しい範囲外ならクランプ
       if (key === 'tileSize') {
         const minGap = -(value - 4)
         if (next.tileGap < minGap) next.tileGap = minGap
@@ -70,15 +68,14 @@ export function VariantProvider({ children }) {
   }, [nextVariant])
 
   return (
-    <VariantContext.Provider value={{ ...state, setParam, nextVariant }}>
+    <VariantContext.Provider value={{ ...state, setParam, nextVariant, prevVariant }}>
       {children}
     </VariantContext.Provider>
   )
 }
 
 export function useVariant() {
-  const ctx = useContext(VariantContext)
-  return ctx.variant
+  return useContext(VariantContext).variant
 }
 
 export function useDesignParams() {

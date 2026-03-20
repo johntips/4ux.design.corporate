@@ -23,7 +23,7 @@ export default function TileGrid() {
   const mouse = useSmoothMouse(0.12)
   const rafRef = useRef(null)
   const activeSet = useRef(new Set()) // 前フレームで影響圏内だったタイルindex
-  const { tileSize, tileGap, opacity: baseOpacity } = useDesignParams()
+  const { tileSize, tileGap, opacity: baseOpacity, rotX, rotY, perspective } = useDesignParams()
 
   const cellSize = Math.max(tileSize + tileGap, 4)
 
@@ -141,6 +141,12 @@ export default function TileGrid() {
     return () => cancelAnimationFrame(rafRef.current)
   }, [tiles, cols, rows, cellSize, baseOpacity, mouse])
 
+  // 3D transform 文字列
+  const transform3d = (rotX || rotY)
+    ? `rotateX(${rotX}deg) rotateY(${rotY}deg)`
+    : undefined
+  const perspectiveStyle = perspective > 0 ? `${perspective}px` : undefined
+
   return (
     <div
       className="tile-grid"
@@ -148,14 +154,17 @@ export default function TileGrid() {
         '--cols': cols,
         '--rows': rows,
         '--tile-size': `${cellSize}px`,
+        perspective: perspectiveStyle,
       }}
     >
+    <div className="tile-grid-inner" style={{ transform: transform3d }}>
       {tiles.map((tile, i) => (
         <div key={i} className="tile" ref={(el) => { tilesRef.current[i] = el }}
           style={{ width: tileSize, height: tileSize }}>
           {tile.isX ? <VariantX /> : <VariantU />}
         </div>
       ))}
+    </div>
     </div>
   )
 }
