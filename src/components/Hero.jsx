@@ -25,10 +25,13 @@ export default function Hero() {
         delay: 0.3,
       })
 
+      // scaleY 圧縮エントリー (yuto-takahashi.com 参考)
+      // 縦方向に 1.4 倍に引き伸ばした状態からスケールダウン → 高級感
       gsap.from(textRef.current, {
-        y: 20,
+        y: '8vh',
+        scaleY: 1.4,
         opacity: 0,
-        duration: 0.8,
+        duration: 1.2,
         ease: 'power3.out',
         delay: 1,
       })

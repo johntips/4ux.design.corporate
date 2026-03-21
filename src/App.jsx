@@ -1,9 +1,10 @@
 /**
  * App.jsx — uuuux.design コーポレートLP
  *
- * variant 0-29:  SVG TileGrid
- * variant 30-39: WebGL TileGrid3D
- * クロスフェードで自然に切り替わる
+ * 演出 (yuto-takahashi.com 参考):
+ *   - ノイズオーバーレイ (CSS, 5% opacity)
+ *   - マウスストーカー (mix-blend-mode: difference)
+ *   - scaleY 圧縮エントリー (Hero, Poem)
  */
 import { lazy, Suspense } from 'react'
 import TileGrid from './components/TileGrid'
@@ -13,10 +14,10 @@ import PatternStrip from './components/PatternStrip'
 import Philosophy from './components/Philosophy'
 import Footer from './components/Footer'
 import Controller from './components/Controller'
+import MouseStalker from './components/MouseStalker'
 import { useDesignParams } from './context/VariantContext'
 import './App.css'
 
-// WebGL は重いので lazy load
 const TileGrid3D = lazy(() => import('./components/TileGrid3D'))
 
 export default function App() {
@@ -25,12 +26,16 @@ export default function App() {
 
   return (
     <>
-      {/* SVG grid: 3D モード時はフェードアウト */}
+      {/* ノイズオーバーレイ — フィルム質感 */}
+      <div className="noise-overlay" />
+
+      {/* マウスストーカー — PC only (CSS で SP 非表示) */}
+      <MouseStalker />
+
       <div className={`grid-layer ${is3D ? 'grid-hidden' : 'grid-visible'}`}>
         <TileGrid />
       </div>
 
-      {/* WebGL grid: 3D モード時のみ表示 */}
       <div className={`grid-layer ${is3D ? 'grid-visible' : 'grid-hidden'}`}>
         <Suspense fallback={null}>
           {is3D && <TileGrid3D />}

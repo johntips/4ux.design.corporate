@@ -26,10 +26,12 @@ export default function Poem() {
     const ctx = gsap.context(() => {
       stanzaRefs.current.forEach((el) => {
         if (!el) return
+        // scaleY 圧縮 + フェードイン (yuto-takahashi.com 参考)
         gsap.from(el, {
-          y: 40,
+          y: '6vh',
+          scaleY: 1.3,
           opacity: 0,
-          duration: 1,
+          duration: 1.2,
           ease: 'power3.out',
           scrollTrigger: {
             trigger: el,
